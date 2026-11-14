@@ -1,29 +1,34 @@
 # Educa.IA
 
-**Protótipo de assistente pedagógico para apoiar o planejamento de atividades na Educação Infantil.**
+**Assistente pedagógico com inteligência artificial para apoiar
+o planejamento de experiências na Educação Infantil.**
 
-O Educa.IA organiza objetivos de aprendizagem, materiais, etapas de desenvolvimento, intervenções, cuidados de segurança e adaptações inclusivas a partir da turma, do tema e do tempo informado pela professora.
+O Educa.IA interpreta o tema informado pela professora e constrói
+planejamentos contextualizados de acordo com a turma e o tempo disponível.
+
+## Funcionalidades
+
+- Interpretação contextualizada de diferentes temas.
+- Adaptação pedagógica para cinco grupos da Educação Infantil.
+- Construção de objetivos de aprendizagem.
+- Seleção de campos de experiência da BNCC.
+- Sugestão de materiais concretos.
+- Organização de etapas e duração.
+- Intervenções pedagógicas.
+- Cuidados de segurança.
+- Adaptações inclusivas.
+- Indicadores de observação pedagógica.
 
 ## Tecnologias
 
 - React
 - TypeScript
 - Vite
-- CSS
+- OpenAI API
+- Vercel Functions
 
 ## Executar localmente
 
 ```bash
 npm install
 npm run dev
-```
-
-Para validar a compilação de produção:
-
-```bash
-npm run build
-```
-
-## Sobre a geração dos planejamentos
-
-Esta versão utiliza padrões e regras programadas localmente. Ela **não possui uma API de inteligência artificial conectada**. Os resultados devem ser revisados pela professora, considerando o contexto da turma, os materiais disponíveis e as orientações da instituição.
