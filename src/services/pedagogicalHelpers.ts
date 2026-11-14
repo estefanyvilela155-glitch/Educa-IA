@@ -1,12 +1,13 @@
 import type { ClassLevel, PlanningStep } from '../types';
 import type { StepSpec } from './patternTypes';
 
+
 export const CLASS_AGE_RANGE: Record<ClassLevel, string> = {
-  'Grupo 1': 'faixa etária do Grupo 1',
-  'Grupo 2': 'faixa etária do Grupo 2',
-  'Grupo 3': 'faixa etária do Grupo 3',
-  'Grupo 4': 'faixa etária do Grupo 4',
-  'Grupo 5': 'faixa etária do Grupo 5',
+  'Grupo 1': '1 a 2 anos',
+  'Grupo 2': '2 a 3 anos',
+  'Grupo 3': '3 a 4 anos',
+  'Grupo 4': '4 a 5 anos',
+  'Grupo 5': '5 a 6 anos',
 };
 
 export interface ClassPedagogicalProfile {
