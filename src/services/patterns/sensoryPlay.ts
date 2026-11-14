@@ -1,154 +1,321 @@
-import type { ActivityPattern, SafetyResult } from '../patternTypes';
-import { isUnder3, isUnder2 } from '../pedagogicalHelpers';
+
+import type { ActivityPattern, SafetyResult, StepSpec } from '../patternTypes';
+import type { ClassLevel } from '../../types';
+
+function normalize(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function getExperience(theme: string): string {
+  const value = normalize(theme);
+
+  if (value.includes('agua') || value.includes('bolha') || value.includes('espuma')) {
+    return 'exploração da água, de suas propriedades e de seus movimentos';
+  }
+
+  if (value.includes('areia') || value.includes('terra') || value.includes('barro')) {
+    return 'exploração de materiais naturais, suas texturas e transformações';
+  }
+
+  if (value.includes('massinha') || value.includes('massa') || value.includes('modelar')) {
+    return 'manipulação e transformação de massa de modelar';
+  }
+
+  if (value.includes('textura') || value.includes('tatil') || value.includes('sensorial') || value.includes('sensório')) {
+    return 'investigação de diferentes texturas e sensações';
+  }
+
+  return `exploração sensorial relacionada ao tema "${theme}"`;
+}
+
+function getGroupFocus(classLevel: ClassLevel): string {
+  const focuses: Record<ClassLevel, string> = {
+    'Grupo 1': 'experimentação sensorial acompanhada, com materiais grandes, seguros e apresentados individualmente',
+    'Grupo 2': 'exploração por meio dos sentidos, repetição de gestos, escolhas simples e descobertas acompanhadas',
+    'Grupo 3': 'comparação de características, experimentação de ações e comunicação das descobertas',
+    'Grupo 4': 'investigação de propriedades, comparação de resultados e criação de pequenas experiências',
+    'Grupo 5': 'investigação intencional, formulação de hipóteses, comparação de resultados e explicação das descobertas',
+  };
+
+  return focuses[classLevel];
+}
+
+function buildStepsForGroup(classLevel: ClassLevel): StepSpec[] {
+  const focus = getGroupFocus(classLevel);
+
+  const groupInstructions: Record<ClassLevel, {
+    explore: string;
+    investigate: string;
+    create: string;
+    questions: string[];
+  }> = {
+    'Grupo 1': {
+      explore: 'Apresente um material por vez, em pequenas quantidades e em recipientes estáveis. Permita que a criança observe, toque ou manipule conforme sua disposição, sempre com acompanhamento próximo.',
+      investigate: 'Acompanhe os gestos espontâneos da criança. Demonstre ações simples, como tocar, apertar ou movimentar o material, sem exigir imitação.',
+      create: 'Ofereça novas oportunidades de exploração com os materiais já apresentados. Valorize o olhar, os gestos, as expressões, os movimentos e as iniciativas da criança.',
+      questions: [
+        'Você quer tocar ou prefere observar primeiro?',
+        'O que acontece quando movimentamos o material?',
+        'Você quer experimentar mais uma vez?',
+      ],
+    },
+    'Grupo 2': {
+      explore: 'Disponibilize pequenas porções e convide as crianças a tocar, movimentar, apertar ou transferir os materiais, respeitando quem prefere observar inicialmente.',
+      investigate: 'Demonstre ações simples e convide as crianças a repeti-las ou modificá-las. Valorize a repetição, a curiosidade e as escolhas individuais.',
+      create: 'Proponha combinações simples de movimentos e materiais, permitindo que cada criança escolha como continuar a exploração.',
+      questions: [
+        'Está diferente quando você aperta?',
+        'Você prefere esse material ou aquele?',
+        'O que acontece se movimentarmos devagar?',
+      ],
+    },
+    'Grupo 3': {
+      explore: 'Convide as crianças a explorar os materiais com as mãos e com utensílios adequados, percebendo diferenças de textura, forma, consistência e movimento.',
+      investigate: 'Proponha pequenas comparações: aproximar, afastar, misturar quando apropriado ou modificar a maneira de manipular. Incentive a comunicação das descobertas.',
+      create: 'Convide cada criança a escolher materiais e ações para realizar uma pequena criação ou experiência, explicando suas escolhas do modo que conseguir.',
+      questions: [
+        'O que você percebeu de diferente?',
+        'O que mudou quando você fez isso?',
+        'Qual material você gostaria de experimentar novamente?',
+      ],
+    },
+    'Grupo 4': {
+      explore: 'Apresente os materiais e convide as crianças a observar, tocar, comparar e descrever suas características, respeitando diferentes formas de participação.',
+      investigate: 'Proponha desafios simples de investigação, como descobrir maneiras diferentes de movimentar, organizar ou transformar os materiais.',
+      create: 'Convide as crianças a planejar uma pequena composição ou experiência, escolher os materiais e contar o que pretendem descobrir.',
+      questions: [
+        'Quais características você encontrou?',
+        'O que mudou depois dessa ação?',
+        'Como podemos descobrir se acontece novamente?',
+      ],
+    },
+    'Grupo 5': {
+      explore: 'Convide as crianças a observar os materiais, levantar ideias sobre suas propriedades e escolher maneiras de iniciar a investigação.',
+      investigate: 'Proponha que testem diferentes ações, comparem os resultados e observem relações entre suas escolhas e as mudanças percebidas.',
+      create: 'Desafie as crianças a elaborar uma composição ou experiência própria, justificando escolhas e compartilhando o percurso realizado.',
+      questions: [
+        'O que você imagina que vai acontecer?',
+        'O resultado foi o que você esperava? Por quê?',
+        'Que outra maneira podemos experimentar?',
+      ],
+    },
+  };
+
+  const instructions = groupInstructions[classLevel];
+
+  return [
+    {
+      title: 'Acolhida e apresentação dos materiais',
+      fraction: 3,
+      teacher: (theme) =>
+        `Apresente a proposta "${theme}" e os materiais selecionados. Explique que o grupo realizará uma experiência de exploração sensorial. ${instructions.explore} O foco será ${focus}.`,
+      children: () =>
+        'As crianças observam a apresentação e participam conforme suas possibilidades, demonstrando curiosidade por meio de gestos, olhares, movimentos, falas ou escolhas.',
+      interventions: () => instructions.questions,
+    },
+    {
+      title: 'Primeira exploração sensorial',
+      fraction: 4,
+      teacher: () =>
+        `${instructions.explore} Observe as iniciativas das crianças e descreva características e ações sem determinar uma única maneira correta de explorar.`,
+      children: () =>
+        'As crianças exploram os materiais disponibilizados, individualmente ou em pequenos grupos, conforme a organização e as condições de segurança da proposta.',
+      interventions: () => [
+        'O que você percebe ao tocar ou observar esse material?',
+        'Você gostaria de experimentar de outra maneira?',
+        'Vou acompanhar sua descoberta. Pode me mostrar o que encontrou?',
+      ],
+    },
+    {
+      title: 'Investigação e novas descobertas',
+      fraction: 4,
+      teacher: () =>
+        `${instructions.investigate} Observe as reações e proponha intervenções de acordo com o interesse demonstrado, sem apressar as descobertas.`,
+      children: () =>
+        'As crianças experimentam outras possibilidades de manipulação e observação, repetem ações, fazem escolhas e compartilham descobertas de diferentes formas.',
+      interventions: () => instructions.questions,
+    },
+    {
+      title: 'Criação ou experimentação escolhida pelo grupo',
+      fraction: 5,
+      teacher: (theme) =>
+        `Retome a proposta "${theme}" e convide as crianças a ampliar a experiência. ${instructions.create} Ofereça apoio quando necessário, preservando a iniciativa infantil.`,
+      children: () =>
+        'As crianças escolhem como continuar a experiência, combinam ações e materiais quando isso for adequado e demonstram suas descobertas por meio de produções, gestos, movimentos ou falas.',
+      interventions: () => [
+        'Qual parte da experiência chamou mais sua atenção?',
+        'Você gostaria de mudar alguma coisa?',
+        'Como podemos continuar explorando?',
+      ],
+    },
+    {
+      title: 'Compartilhamento e organização',
+      fraction: 2,
+      teacher: () =>
+        'Convide as crianças a observar o que foi explorado e a compartilhar suas descobertas por meio de falas, gestos ou demonstrações. Organize a limpeza e o armazenamento dos materiais com participação adequada à idade.',
+      children: () =>
+        'As crianças compartilham o que descobriram, observam as experiências dos colegas e participam da organização conforme suas possibilidades.',
+      interventions: () => [
+        'O que você mais gostou de explorar?',
+        'O que descobrimos durante a experiência?',
+        'Você gostaria de experimentar novamente em outro momento?',
+      ],
+    },
+  ];
+}
 
 export const sensoryPlay: ActivityPattern = {
   id: 'sensory-play',
-  keywords: ['sensório', 'sensorial', 'massinha', 'massa', 'modelar', 'textura', 'tátil', 'areia', 'água', 'agua', 'espuma', 'bolha', 'bolhas', 'tactil', 'cinestésico', 'cinestesico', 'exploração', 'exploracao', 'manipulação', 'manipulacao'],
-  description: 'Exploração sensorial e manipulação tátil',
+
+  keywords: [
+    'sensório',
+    'sensorial',
+    'massinha',
+    'massa',
+    'modelar',
+    'textura',
+    'tátil',
+    'areia',
+    'água',
+    'agua',
+    'espuma',
+    'bolha',
+    'bolhas',
+    'tactil',
+    'cinestésico',
+    'cinestesico',
+    'exploração',
+    'exploracao',
+    'manipulação',
+    'manipulacao',
+  ],
+
+  description: 'Exploração sensorial e investigação de materiais',
+
   bnccFields: [
+    'O eu, o outro e o nós',
     'Corpo, gestos e movimentos',
     'Traços, sons, cores e formas',
-    'Escuta, fala, pensamento e imaginação',
+    'Espaços, tempos, quantidades, relações e transformações',
   ],
 
-  buildObjectives: (theme, ageRange) => [
-    `Estimular a percepção sensorial por meio da exploração tátil, visual e auditiva de materiais relacionados ao tema "${theme}", adequada à faixa de ${ageRange}.`,
-    `Desenvolver a coordenação motora fina e a força dos movimentos de apertar, amassar, modelar e manipular diferentes texturas e consistências.`,
-    `Promover a expressão verbal e não-verbal por meio da nomeação de sensações (macio, duro, liso, áspero, quente, frio) e da descrição do que sente ao manipular.`,
-    `Favorecer a concentração, a persistência e o envolvimento profundo na atividade sensorial, respeitando o tempo e o ritmo de cada criança.`,
-    `Estimular a imaginação e a criatividade por meio da transformação e modelagem dos materiais em formas livremente criadas.`,
-  ],
+  buildObjectives: (theme, _ageRange, classLevel) => {
+    const experience = getExperience(theme);
+    const objectives: Record<ClassLevel, string[]> = {
+      'Grupo 1': [
+        `Vivenciar ${experience} por meio de experiências acompanhadas, respeitando as iniciativas e o tempo de cada criança.`,
+        'Ampliar as possibilidades de percepção e exploração por meio de gestos, movimentos e contato com materiais adequados.',
+        'Expressar curiosidade, preferências e reações por meio de olhares, gestos, movimentos e vocalizações.',
+      ],
+      'Grupo 2': [
+        `Ampliar as experiências de ${experience}, realizando ações variadas e descobrindo características dos materiais.`,
+        'Experimentar movimentos de tocar, apertar, movimentar e organizar materiais, desenvolvendo a coordenação motora.',
+        'Comunicar preferências, sensações e descobertas por meio de gestos, palavras e interações.',
+      ],
+      'Grupo 3': [
+        `Investigar ${experience}, percebendo semelhanças, diferenças e transformações observáveis.`,
+        'Ampliar a coordenação motora e a autonomia ao escolher e manipular materiais e utensílios adequados.',
+        'Compartilhar descobertas e comunicar percepções por meio de diferentes linguagens.',
+      ],
+      'Grupo 4': [
+        `Investigar propriedades e possibilidades de ${experience}, estabelecendo comparações entre materiais e resultados.`,
+        'Planejar e realizar ações de exploração, ampliando a autonomia e a coordenação dos movimentos.',
+        'Formular perguntas, comunicar descobertas e participar de experiências coletivas.',
+      ],
+      'Grupo 5': [
+        `Investigar ${experience}, levantando hipóteses, testando possibilidades e comparando resultados.`,
+        'Planejar experiências e fazer escolhas intencionais sobre materiais, movimentos e procedimentos.',
+        'Registrar ou comunicar descobertas por meio de falas, desenhos, gestos e outras formas de expressão.',
+      ],
+    };
 
-  buildMaterials: (theme, classLevel) => {
-    const base = [
-      `Massa de modelar caseira (farinha, água e sal) ou massinha atóxica em cores relacionadas ao tema "${theme}"`,
-      'Tapete ou plástico grande para forrar a superfície',
-      'Cortadores de plástico (sem bordas cortantes) em formas variadas',
-      'Rolo de plástico para abrir a massa',
-      'Bandejas para organizar os materiais por criança',
-      'Pano úmido para limpeza das mãos durante a atividade',
-    ];
-
-    if (isUnder2(classLevel)) {
-      base[0] = `Massa caseira comestível (farinha, água e óleo, sem sal) em cores relacionadas ao tema "${theme}" — segura em caso de ingestão incidental`;
-      base[2] = 'Cortadores grandes de plástico com bordas totalmente sem corte';
-    }
-
-    return base;
+    return objectives[classLevel];
   },
 
-  stepSpecs: [
-    {
-      title: 'Acolhida e apresentação dos materiais sensoriais',
-      fraction: 3,
-      teacher: (theme, ageRange) =>
-        `Sente as crianças em roda e apresente o tema "${theme}". Mostre a massa de modelar em seus potes e diga: "Hoje vamos sentir e modelar com esta massinha!". Abra um pote, pegue uma porção e demonstre: aperte, amasse, faça uma bolinha. Nomeie as sensações: "É macia! É fresquinha!". Para a faixa de ${ageRange}, permita que toquem a massa imediatamente, priorizando a experiência sensorial imediata.`,
-      children: () =>
-        `As crianças observam a apresentação da massa de modelar. Quando recebem uma porção, tocam, apertam, amassam e exploram livremente. Algumas cheiram, outras observam a textura. A primeira reação é de descoberta tátil.`,
-      interventions: () => [
-        `"Sintam a massa. Como ela é? Macia ou dura? Lisa ou áspera?"`,
-        `"O que acontece quando você aperta forte? E quando aperta de leve?"`,
-        `"Vamos fazer uma bolinha juntos? Aperta e roda na mão assim!"`,
-        'Para crianças que hesitam em tocar: encostar a massa na ponta dos dedos e descrever a sensação, incentivando o toque gradual.',
-      ],
-    },
-    {
-      title: 'Exploração livre da textura e consistência',
-      fraction: 4,
-      teacher: (_theme, ageRange) =>
-        `Disponibilize a massa para cada criança sobre a superfície forrada. Permita a exploração livre: apertar, amassar, esticar, rasgar, amassar de novo. Circule entre as crianças nomeando o que cada uma faz: "Você está esticando a massa! Ficou comprida!". Para a faixa de ${ageRange}, o foco é a experiência sensorial pura, sem exigência de criar formas específicas.`,
-      children: () =>
-        `As crianças manipulam a massa livremente: apertam com os dedos, amassam com as palmas, esticam, rasgam em pedaços, juntam de novo. Algumas fazem bolas, outras cobras, outras apenas apertam repetidamente. A exploração é absorvente e repetitiva.`,
-      interventions: () => [
-        '"O que você está fazendo com a massa? Como ela está mudando?"',
-        '"Faça uma bola grande. Agora uma bola pequena. Qual é mais pesada?"',
-        '"Estica a massa até ficar bem fininha. O que acontece se esticar muito?"',
-        'Para crianças com hipersensibilidade tátil: oferecer luvas finas ou permitir que usem um pano entre a mão e a massa.',
-        'Para crianças que repetem o mesmo gesto: propor uma variação ("E se você rolar a massa na mesa? Fica como?").',
-      ],
-    },
-    {
-      title: 'Demonstração de técnicas de modelagem',
-      fraction: 2,
-      teacher: (theme) =>
-        `Chame a atenção do grupo para uma demonstração. Mostre técnicas simples: (1) rolar a massa na mesa para fazer uma "cobrinha"; (2) amassar para fazer uma bolinha; (3) apertar para fazer uma "panqueca"; (4) usar um cortador para fazer uma forma. Conecte com o tema "${theme}": "Quem quer tentar fazer uma forma sobre ${theme}?". Enfatize que não precisa sair perfeito, o importante é explorar.`,
-      children: () =>
-        `As crianças observam as técnicas demonstradas. Algumas imitam imediatamente o gesto de rolar ou amassar. Quando recebem os cortadores, experimentam apertar na massa para ver a forma que aparece.`,
-      interventions: () => [
-        '"Vamos fazer uma cobrinha juntos? Rola a massa na mesa, assim!"',
-        '"Aperta o cortador na massa e levanta. O que apareceu?"',
-        '"Quem consegue fazer uma panquequinha bem fininha?"',
-        'Convidar uma criança para demonstrar uma técnica para os colegas, valorizando suas descobertas.',
-      ],
-    },
-    {
-      title: 'Criação livre sobre o tema',
-      fraction: 7,
-      teacher: (theme, ageRange) =>
-        `Proponha que cada criança crie livremente algo relacionado ao tema "${theme}" usando as técnicas que aprenderam. Diga: "Agora vocês vão criar algo sobre ${theme} com a massa. Pode ser qualquer coisa que vocês imaginarem!". Distribua cortadores e rolos. Circule entre as crianças, aproximando-se de cada uma, perguntando sobre o que estão criando e oferecendo ajuda técnica sem interferir na criação. Para a faixa de ${ageRange}, valorize o processo de modelagem e manipulação, não o resultado final.`,
-      children: () =>
-        `As crianças criam livremente com a massa: algumas usam cortadores para fazer formas, outras modelam com as mãos, outras combinam técnicas. Cada uma está concentrada em sua criação. Algumas mostram o resultado para os colegas, outras continuam modelando em silêncio.`,
-      interventions: () => [
-        '"Me conta o que você está fazendo. O que esta parte representa?"',
-        '"Você quer tentar o cortador em formato de estrela? Como fica?"',
-        '"Estou vendo que você misturou duas cores. O que surgiu?"',
-        'Para crianças que dizem "não consigo": "Não precisa fazer igual a ninguém. Modela do seu jeito!"',
-        'Para crianças com mais habilidade: propor que combinem duas formas ou que criem uma cena completa sobre o tema.',
-      ],
-    },
-    {
-      title: 'Encerramento e exposição das criações',
-      fraction: 2,
-      teacher: () =>
-        `Convide as crianças a parar a modelagem e reunir as criações em uma mesa de exposição. Reúna todos em roda. Passe por cada criação: "O que você fez? Conte para os amigos!". Valorize a diversidade de produções: "Cada um criou do seu jeito e todas são especiais". Conduza a limpeza das mãos e o guardamento dos materiais. Encerre agradecendo a participação.`,
-      children: () =>
-        `As crianças levam suas criações para a mesa de exposição. Na roda, cada uma é convidada a falar sobre o que criou. Observam as produções dos colegas e comentam. Ajudam a guardar os materiais e limpam as mãos.`,
-      interventions: () => [
-        '"João, conte para a turma o que você modelou. Como você fez?"',
-        '"Quem usou o cortador? E quem modelou só com as mãos? Ficou diferente?"',
-        '"O que vocês sentiram ao mexer com a massinha? Foi legal?"',
-        'Reforçar: "Não tem certo ou errado — todas as criações são importantes porque cada uma foi feita com o jeito de cada um."',
-      ],
-    },
-  ],
+  buildMaterials: (theme, classLevel) => {
+    const value = normalize(theme);
+    const materials: string[] = [
+      'Bandejas ou recipientes estáveis, adequados à proposta',
+      'Proteção lavável para a superfície de exploração',
+      'Panos e materiais de higiene para a organização após a experiência',
+    ];
 
-  buildSafety: (classLevel, _ageRange): SafetyResult => {
-    const notes: string[] = [];
+    if (value.includes('agua') || value.includes('bolha') || value.includes('espuma')) {
+      materials.push(
+        'Recipientes rasos e estáveis com pequenas quantidades de água, quando apropriado',
+        'Esponjas grandes e íntegras, sem partes soltas',
+        'Utensílios grandes e resistentes para movimentar ou transferir água',
+      );
+    } else if (value.includes('areia') || value.includes('terra') || value.includes('barro')) {
+      materials.push(
+        'Areia ou terra de procedência conhecida e apropriada para uso infantil, quando autorizada',
+        'Recipientes e pás grandes, resistentes e sem pontas',
+        'Elementos naturais selecionados individualmente e previamente inspecionados',
+      );
+    } else if (value.includes('massinha') || value.includes('massa') || value.includes('modelar')) {
+      materials.push(
+        'Massa de modelar atóxica, apropriada à faixa etária e utilizada conforme orientação do fabricante',
+        'Rolos e utensílios grandes, resistentes e sem bordas cortantes',
+        'Superfície limpa e estável para modelagem',
+      );
+    } else {
+      materials.push(
+        'Materiais de diferentes texturas, selecionados conforme o tema e a faixa etária',
+        'Objetos grandes, resistentes, laváveis e sem partes que possam se soltar',
+        'Utensílios adequados para observar, tocar, movimentar ou organizar os materiais',
+      );
+    }
 
-    notes.push(
-      'Utilizar exclusivamente massas de modelar atóxicas e certificadas para uso infantil, ou massa caseira com ingredientes seguros.',
-    );
+    if (classLevel === 'Grupo 1' || classLevel === 'Grupo 2') {
+      materials.push(
+        'Materiais de tamanho adequado, sem peças pequenas, sem risco de aspiração e que não se desfaçam durante a exploração',
+      );
+    }
 
-    if (isUnder3(classLevel)) {
+    return materials;
+  },
+
+  stepSpecs: buildStepsForGroup('Grupo 3'),
+
+  buildStepSpecs: (_theme, _ageRange, classLevel) =>
+    buildStepsForGroup(classLevel),
+
+  buildSafety: (classLevel, ageRange): SafetyResult => {
+    const notes = [
+      'Inspecionar todos os materiais antes da atividade, retirando itens quebrados, pontiagudos, tóxicos, deteriorados ou com partes que possam se soltar.',
+      'Verificar previamente possíveis alergias, sensibilidades, restrições e orientações individuais das crianças.',
+      'Manter supervisão contínua e próxima durante toda a exploração. Não permitir que materiais sejam colocados na boca, nariz ou ouvidos.',
+      'Utilizar água em quantidade controlada e recipientes estáveis; evitar pisos molhados e risco de escorregamento.',
+      'Não utilizar materiais de origem desconhecida, produtos químicos, substâncias irritantes ou misturas improvisadas.',
+    ];
+
+    if (classLevel === 'Grupo 1' || classLevel === 'Grupo 2') {
       notes.push(
-        'Crianças menores de 3 anos frequentemente levam as mãos e materiais à boca: a supervisão deve ser direta e contínua para evitar ingestão.',
+        `Para o ${classLevel}, com faixa etária de ${ageRange}, evitar peças pequenas, materiais que possam ser engolidos ou aspirados e substâncias cuja composição não seja conhecida. A supervisão deve permitir intervenção imediata.`,
+        'Não oferecer materiais comestíveis como garantia de segurança: alergias, engasgos e ingestão de quantidades inadequadas também precisam ser considerados.',
       );
     } else {
       notes.push(
-        'Oriente as crianças a não levar a massa à boca, nariz ou ouvidos.',
+        `Para o ${classLevel}, com faixa etária de ${ageRange}, explicar os combinados de segurança antes da exploração e acompanhar o uso dos utensílios, sem substituir a supervisão adulta.`,
       );
     }
 
-    notes.push(
-      'Verificar que os cortadores e rolos não tenham bordas cortantes nem lascas.',
-    );
-
-    if (isUnder2(classLevel)) {
-      return {
-        notes,
-        alternative:
-          'Para bebês que ainda levam tudo à boca, usar exclusivamente massa caseira comestível (farinha, água e óleo, sem sal, com corante alimentar). Esta alternativa é segura em caso de ingestão incidental e oferece a mesma experiência sensorial e de modelagem.',
-      };
-    }
-
-    return { notes, alternative: null };
+    return {
+      notes,
+      alternative:
+        'Se algum material não for adequado, apresentar outro recurso de composição conhecida, íntegro, higienizável e compatível com a faixa etária, preservando a intenção de investigar texturas, movimentos ou transformações.',
+    };
   },
 
-  buildAdaptations: (_classLevel, _ageRange) => [
-    'Para crianças com hipersensibilidade tátil: oferecer luvas finas, permitir o uso de utensílios (rolo, cortadores) como alternativa ao toque direto, ou iniciar com texturas mais firmes antes de passar para massas mais macias.',
-    'Para crianças com menor força nas mãos: oferecer massa mais macia (menos farinha ou mais água) e cortadores que exijam menos pressão.',
-    'Para crianças com mobilidade reduzida: fixar a massa em uma superfície não deslizante (toalha úmida sob o tapete) e ajustar a altura da mesa.',
-    'Para crianças com mais habilidade de modelagem: propor que criem cenas completas sobre o tema, combinando múltiplas formas e detalhes.',
-    'Para crianças com deficiência visual: oferecer materiais com texturas distintas e descrever verbalmente as formas e técnicas, permitindo a modelagem pelo tato.',
+  buildAdaptations: (classLevel, ageRange) => [
+    `Organizar a experiência considerando o ${classLevel} (${ageRange}), sem exigir que todas as crianças realizem as mesmas ações ou alcancem o mesmo resultado.`,
+    'Para crianças com sensibilidade tátil, permitir observar primeiro, utilizar utensílios como alternativa ao toque direto ou escolher outro material confortável.',
+    'Para crianças com mobilidade reduzida, ajustar a altura da superfície, estabilizar os recipientes e posicionar os materiais ao alcance.',
+    'Para crianças com deficiência visual, oferecer exploração tátil segura, descrição verbal das características e organização previsível dos materiais.',
+    'Para crianças que utilizam comunicação não oral, acolher escolhas por gestos, expressões, movimentos, apontamentos ou recursos de comunicação alternativa.',
+    'Ampliar ou simplificar os desafios conforme o interesse, as iniciativas e as necessidades observadas durante a atividade.',
   ],
 };
