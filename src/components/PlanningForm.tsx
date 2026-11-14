@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import type { ClassLevel, PlanningInput } from '../types';
 
@@ -7,7 +8,6 @@ interface PlanningFormProps {
 }
 
 const CLASS_LEVELS: ClassLevel[] = [
-  'Berçário',
   'Grupo 1',
   'Grupo 2',
   'Grupo 3',
