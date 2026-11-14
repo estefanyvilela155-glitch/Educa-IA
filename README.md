@@ -1,9 +1,16 @@
 # Educa-IA
 
 Protótipo de assistente pedagógico para apoiar o planejamento de atividades na Educação Infantil.
-
-O Educa.IA é um projeto desenvolvido para auxiliar educadores na elaboração de planejamentos pedagógicos, organizando objetivos de aprendizagem, materiais necessários, etapas de desenvolvimento, cuidados de segurança e adaptações inclusivas de acordo com a faixa etária e o tempo disponível.
-
-Objetivo: facilitar a elaboração de planejamentos pedagógicos.
-Público-alvo: professores da  Educação Infantil. 
-Funcionalidades: seleção da turma, tema e duração; geração de objetivos, materiais, etapas, cuidados de segurança e adaptações inclusivas.
+O Educa.IA organiza objetivos de aprendizagem, materiais, etapas de desenvolvimento, intervenções, cuidados de segurança e adaptações inclusivas a partir da turma, do tema e do tempo informado pela professora.
+Tecnologias
+React
+TypeScript
+Vite
+CSS
+Executar localmente
+npm install
+npm run dev
+Para validar a compilação de produção:
+npm run build
+Sobre a geração dos planejamentos
+Esta versão utiliza padrões e regras programadas localmente. Ela não possui uma API de inteligência artificial conectada. Os resultados devem ser revisados pela professora, considerando o contexto da turma, os materiais disponíveis e as orientações da instituição.
