@@ -1,155 +1,302 @@
-import type { ActivityPattern, SafetyResult } from '../patternTypes';
-import { isUnder3, isUnder2 } from '../pedagogicalHelpers';
+import type { ClassLevel } from '../../types';
+import type { ActivityPattern, SafetyResult, StepSpec } from '../patternTypes';
+
+const GROUP_GUIDANCE: Record<ClassLevel, {
+  focus: string;
+  experience: string;
+  mediation: string;
+  questions: string[];
+}> = {
+  'Grupo 1': {
+    focus: 'observação, exploração sensorial acompanhada e interação com elementos naturais',
+    experience: 'observar características visuais e táteis de elementos previamente avaliados, respeitando as iniciativas e reações das crianças',
+    mediation: 'apresentar poucos elementos por vez, nomear características e acompanhar a exploração de perto',
+    questions: [
+      'Você percebeu esta folha?',
+      'Que cor conseguimos observar?',
+      'Vamos olhar este elemento novamente?',
+    ],
+  },
+  'Grupo 2': {
+    focus: 'exploração, reconhecimento de características, escolhas e descobertas',
+    experience: 'explorar elementos naturais, reconhecer diferenças visíveis e participar de pequenas experiências de observação',
+    mediation: 'incentivar escolhas, nomear características e apresentar comparações concretas',
+    questions: [
+      'Qual desses elementos chamou sua atenção?',
+      'Esta folha parece igual à outra?',
+      'O que você percebeu quando olhou de perto?',
+    ],
+  },
+  'Grupo 3': {
+    focus: 'investigação, comparação, agrupamento e comunicação de descobertas',
+    experience: 'observar elementos, comparar características e organizar descobertas por critérios simples',
+    mediation: 'incentivar hipóteses, comparações e explicações, oferecendo apoio quando necessário',
+    questions: [
+      'O que esses elementos têm de parecido?',
+      'Como podemos organizar nossas descobertas?',
+      'O que você percebeu de diferente?',
+    ],
+  },
+  'Grupo 4': {
+    focus: 'investigação, relações entre elementos naturais, hipóteses e observação de transformações',
+    experience: 'investigar características, estabelecer relações, comparar elementos e observar fenômenos naturais',
+    mediation: 'propor perguntas investigativas e incentivar que as crianças expliquem suas observações e revejam hipóteses',
+    questions: [
+      'Por que você acha que esses elementos são diferentes?',
+      'O que pode acontecer com uma folha depois de alguns dias?',
+      'Como poderíamos investigar essa ideia?',
+    ],
+  },
+  'Grupo 5': {
+    focus: 'investigação planejada, formulação de hipóteses, registros e comunicação de descobertas',
+    experience: 'planejar pequenas investigações, observar fenômenos, comparar resultados e comunicar conclusões',
+    mediation: 'estimular a elaboração de perguntas, o planejamento de observações e a revisão de ideias diante de novas descobertas',
+    questions: [
+      'O que queremos descobrir com esta investigação?',
+      'Como podemos observar se nossa hipótese faz sentido?',
+      'O que os registros mostram sobre o que aconteceu?',
+    ],
+  },
+};
+
+function createStepSpecs(classLevel: ClassLevel): StepSpec[] {
+  const guidance = GROUP_GUIDANCE[classLevel];
+
+  return [
+    {
+      title: 'Aproximação com o tema',
+      fraction: 2,
+      teacher: (theme, ageRange) =>
+        `Apresente o tema "${theme}" por meio de imagens, objetos, observações do ambiente ou conversa. Organize os recursos de maneira acessível e considere a faixa de ${ageRange}. Priorize ${guidance.focus}.`,
+      children: () =>
+        'As crianças observam, demonstram curiosidade, apontam elementos, fazem comentários ou acompanham a apresentação. Cada uma participa conforme seus interesses e possibilidades.',
+      interventions: () => [
+        'Observar quais elementos despertam interesse.',
+        'Acolher perguntas, gestos, apontamentos e comentários.',
+        'Relacionar o tema às experiências e observações das crianças.',
+      ],
+    },
+    {
+      title: 'Observação e exploração',
+      fraction: 3,
+      teacher: (_theme, ageRange) =>
+        `Apresente os elementos e recursos selecionados, considerando a faixa de ${ageRange} e a avaliação prévia de segurança. Convide as crianças a observar características, formas, cores e possíveis transformações. A experiência deve favorecer ${guidance.experience}.`,
+      children: () =>
+        'As crianças observam, exploram os recursos disponibilizados e identificam características que chamam sua atenção. A participação pode ocorrer por observação, gestos, fala, desenhos ou manipulação acompanhada.',
+      interventions: () => [
+        'O que você percebeu neste elemento?',
+        'Que característica chamou sua atenção?',
+        'Permitir que cada criança explore no próprio ritmo.',
+      ],
+    },
+    {
+      title: 'Investigação e comparação',
+      fraction: 4,
+      teacher: () =>
+        `Proponha uma investigação adequada ao grupo, utilizando os elementos e recursos selecionados. Incentive a observação e a comparação sem antecipar as descobertas. ${guidance.mediation}.`,
+      children: () =>
+        'As crianças investigam características, comparam elementos e compartilham percepções. Conforme a proposta, podem agrupar materiais, levantar hipóteses ou observar mudanças.',
+      interventions: () => guidance.questions,
+    },
+    {
+      title: 'Ampliação e registro das descobertas',
+      fraction: 3,
+      teacher: (theme) =>
+        `Amplie a experiência relacionada ao tema "${theme}". Nos grupos menores, valorize novas observações, escolhas e repetições; nos maiores, incentive investigações, registros e explicações. Proponha desenhos, organização de imagens, relatos ou outros registros adequados ao grupo.`,
+      children: () =>
+        'As crianças podem desenhar, organizar elementos, contar o que observaram, comparar descobertas ou demonstrar suas ideias por diferentes linguagens.',
+      interventions: () => [
+        'Como podemos mostrar o que descobrimos?',
+        'O que gostaríamos de observar novamente?',
+        'Oferecer diferentes formas de registro e expressão.',
+      ],
+    },
+    {
+      title: 'Compartilhamento e cuidado com a natureza',
+      fraction: 2,
+      teacher: () =>
+        'Convide as crianças a compartilhar observações e descobertas. Converse sobre o cuidado com os seres vivos e o ambiente, relacionando o tema às experiências realizadas. Organize os materiais e destine os elementos naturais de maneira responsável, conforme sua origem e as orientações da instituição.',
+      children: () =>
+        'As crianças podem mostrar registros, comentar descobertas, apontar elementos de interesse e participar da organização do espaço conforme suas possibilidades.',
+      interventions: () => [
+        'O que mais chamou sua atenção durante a investigação?',
+        'Que cuidado podemos ter com os elementos da natureza?',
+        'Registrar falas, gestos, hipóteses e descobertas.',
+      ],
+    },
+  ];
+}
 
 export const nature: ActivityPattern = {
   id: 'nature',
-  keywords: ['natureza', 'planta', 'plantas', 'folhas', 'folha', 'árvore', 'arvore', 'flor', 'flores', 'jardim', 'semente', 'sementes', 'horta', 'terra', 'água', 'agua', 'animal', 'animais', 'borboleta', 'passarinho', 'outono', 'primavera'],
-  description: 'Exploração da natureza e do meio ambiente',
+
+  keywords: [
+    'natureza',
+    'planta',
+    'plantas',
+    'folhas',
+    'folha',
+    'árvore',
+    'arvore',
+    'flor',
+    'flores',
+    'jardim',
+    'semente',
+    'sementes',
+    'horta',
+    'terra',
+    'água',
+    'agua',
+    'animal',
+    'animais',
+    'borboleta',
+    'passarinho',
+    'outono',
+    'primavera',
+    'meio ambiente',
+    'preservação',
+    'preservacao',
+  ],
+
+  description: 'Exploração da natureza e investigação do meio ambiente',
+
   bnccFields: [
     'Espaços, tempos, quantidades, relações e transformações',
     'Escuta, fala, pensamento e imaginação',
-    'Corpo, gestos e movimentos',
+    'O eu, o outro e o nós',
   ],
 
-  buildObjectives: (theme, ageRange) => [
-    `Promover a observação e a exploração sensorial dos elementos da natureza relacionados a "${theme}", adequada à faixa de ${ageRange}, estimulando a curiosidade e o olhar detalhado.`,
-    `Estimular a formulação de perguntas e hipóteses sobre o mundo natural, desenvolvendo o pensamento investigativo e a capacidade de observação sistemática.`,
-    `Desenvolver o respeito e o cuidado com os seres vivos e o meio ambiente, promovendo atitudes de preservação e de valorização da natureza.`,
-    `Ampliar o vocabulário por meio da nomeação de elementos naturais (folhas, flores, sementes, galhos) e da descrição de suas características (cor, textura, forma, tamanho).`,
-    `Favorecer a classificação e a organização dos elementos por diferentes critérios (cor, tamanho, tipo, textura), desenvolvendo o pensamento lógico e a comparação.`,
+  buildBnccFields: () => [
+    'Espaços, tempos, quantidades, relações e transformações',
+    'Escuta, fala, pensamento e imaginação',
+    'O eu, o outro e o nós',
   ],
+
+  buildObjectives: (theme, _ageRange, classLevel) => {
+    const objectives: Record<ClassLevel, string[]> = {
+      'Grupo 1': [
+        `Participar de experiências de observação e exploração relacionadas ao tema "${theme}".`,
+        'Perceber características de elementos naturais por meio de experiências visuais e sensoriais acompanhadas.',
+        'Ampliar as possibilidades de interação e expressão durante experiências com o ambiente.',
+      ],
+      'Grupo 2': [
+        `Explorar elementos e fenômenos da natureza relacionados ao tema "${theme}".`,
+        'Reconhecer características e diferenças observáveis entre elementos naturais.',
+        'Participar de experiências de descoberta, escolha e comparação.',
+      ],
+      'Grupo 3': [
+        `Investigar características de elementos naturais relacionados ao tema "${theme}".`,
+        'Comparar, agrupar e organizar elementos utilizando critérios observáveis.',
+        'Expressar descobertas e participar de experiências de investigação.',
+      ],
+      'Grupo 4': [
+        `Investigar relações e transformações relacionadas ao tema "${theme}".`,
+        'Elaborar hipóteses e comparar características de fenômenos e elementos naturais.',
+        'Compartilhar observações e construir explicações a partir das experiências.',
+      ],
+      'Grupo 5': [
+        `Planejar pequenas investigações sobre fenômenos e elementos relacionados ao tema "${theme}".`,
+        'Formular hipóteses, realizar observações e registrar informações obtidas.',
+        'Comunicar descobertas e rever ideias a partir dos resultados observados.',
+      ],
+    };
+
+    return objectives[classLevel];
+  },
 
   buildMaterials: (theme, classLevel) => {
-    const base = [
-      `Elementos da natureza relacionados ao tema "${theme}" (folhas, flores, sementes, galhos finos) — coletados previamente e inspecionados`,
-      'Lupas ou lentes de aumento (uma por criança ou para grupos)',
-      'Bandejas rasas para organizar e separar os elementos por tipo',
-      'Cestos ou caixas para coleta e armazenamento',
-      'Papel e lápis de cor para registros de observação (opcional, para grupos 3+)',
+    const common = [
+      `Imagens, livros ou referências visuais relacionadas ao tema "${theme}"`,
+      'Bandejas ou recipientes íntegros para organização dos recursos',
+      'Materiais para registro e expressão, conforme a proposta',
     ];
 
-    if (isUnder2(classLevel)) {
-      base[0] = `Elementos da natureza grandes e seguros relacionados a "${theme}" (folhas grandes, galhos grossos sem pontas) — inspecionados e higienizados`;
-      base[1] = 'Lupas grandes e de plástico resistente (para observação supervisionada)';
+    if (classLevel === 'Grupo 1' || classLevel === 'Grupo 2') {
+      return [
+        ...common,
+        'Elementos naturais selecionados individualmente, identificados, higienizados e avaliados previamente',
+        'Recursos visuais e objetos de observação resistentes e apropriados à faixa etária',
+        'Espaço organizado para exploração acompanhada pelo adulto',
+      ];
     }
 
-    return base;
+    if (classLevel === 'Grupo 3') {
+      return [
+        ...common,
+        'Elementos naturais previamente inspecionados e adequados à manipulação',
+        'Lupas resistentes e apropriadas para observação supervisionada',
+        'Cartões ou imagens para comparação e agrupamento',
+        'Papel e materiais gráficos para desenhos de observação',
+      ];
+    }
+
+    return [
+      ...common,
+      'Elementos naturais e recursos de observação selecionados conforme a investigação',
+      'Lupas e instrumentos apropriados para observação acompanhada',
+      'Materiais para registro de hipóteses, observações e resultados',
+      'Cartões, etiquetas ou recursos para organização das descobertas',
+    ];
   },
 
-  stepSpecs: [
-    {
-      title: 'Acolhida e apresentação dos elementos naturais',
-      fraction: 3,
-      teacher: (theme, ageRange) =>
-        `Receba as crianças em roda e apresente o tema "${theme}". Mostre os elementos da natureza coletados previamente, um tipo por vez: "Olhem esta folha! O que vocês veem?". Passe cada elemento pela roda para que observem e toquem. Nomeie cada elemento e suas características principais (cor, textura, tamanho). Para a faixa de ${ageRange}, priorize a exploração tátil e visual com elementos grandes e seguros.`,
-      children: () =>
-        `As crianças observam os elementos apresentados na roda. Quando recebem cada elemento, tocam, cheiram, viram de diferentes lados. Algumas apontam cores ou formas que reconhecem, outras comentam o que sentem ao tocar.`,
-      interventions: (theme) => [
-        `"Olhem esta folha de ${theme}. Que cor ela tem? E esta, é diferente?"`,
-        '"Quando você toca, como ela é? Lisa, áspera, macia?"',
-        '"Onde será que esta folha estava antes de chegar aqui?"',
-        'Para crianças que não tocam: encostar o elemento na mão e nomear a sensação, incentivando o toque gradual.',
-      ],
-    },
-    {
-      title: 'Observação guiada com lupas',
-      fraction: 4,
-      teacher: (_theme, ageRange) =>
-        `Distribua os elementos nas bandejas (um tipo por bandeja). Entregue as lupas e ensine como usar: "Coloque a lupa perto do olho e olhe o elemento bem de pertinho!". Guie a observação com perguntas: "O que vocês veem que não dava para ver sem a lupa?". Aponte detalhes como nervuras das folhas, textura das sementes, cores das pétalas. Para a faixa de ${ageRange}, ajude cada criança a posicionar a lupa e nomeie o que ela vê.`,
-      children: () =>
-        `As crianças usam as lupas para observar os elementos de perto. Descobrem detalhes invisíveis a olho nu: pequenas veias nas folhas, texturas nas sementes, cores nas pétalas. Compartilham descobertas com os colegas ao lado. A observação é atenta e prolongada.`,
-      interventions: () => [
-        '"O que você está vendo com a lupa que não dava para ver antes?"',
-        '"As folhas têm linhas! Vocês veem? Como são essas linhas?"',
-        '"Esta semente é lisa ou tem textura? Descrevam para mim."',
-        'Para crianças que não focam a lupa: ajudar a posicionar e apontar o detalhe a observar.',
-        'Estimular comparações: "A folha da Maria tem o mesmo desenho que a sua?"',
-      ],
-    },
-    {
-      title: 'Exploração livre e classificação',
-      fraction: 5,
-      teacher: (theme) =>
-        `Permita que as crianças manipulem os elementos livremente sobre as bandejas. Proponha desafios de organização: "Quem consegue separar as folhas das flores? E as sementes dos galhos?". Outra proposta: "Vamos organizar por cor? E por tamanho?". Circule entre os grupos, nomeando elementos e fazendo perguntas que promovam a classificação. Conecte com o tema "${theme}": "Onde encontramos estes elementos na natureza?".`,
-      children: () =>
-        `As crianças manipulam os elementos livremente: tocam, cheiram, agrupam, separam. Algumas organizam por cor, outras por tipo, outras por tamanho. A exploração é ativa e cada criança descobre seus próprios critérios de organização. Compartilham descobertas e comparam resultados.`,
-      interventions: () => [
-        '"Como você separou estes elementos? Por que este ficou aqui e aquele ali?"',
-        '"Quantas folhas verdes você encontrou? E amarelas? Tem mais de qual cor?"',
-        '"Qual é o maior elemento da sua bandeja? E o menor?"',
-        'Para crianças que não classificam sozinhas: sugerir um critério inicial ("Vamos separar as folhas das flores?") e ajudar a iniciar.',
-        'Para crianças que classificam com facilidade: propor dois critérios ao mesmo tempo ("Pode separar por cor e depois por tamanho dentro de cada cor?").',
-      ],
-    },
-    {
-      title: 'Registro de observação (opcional)',
-      fraction: 5,
-      teacher: (_theme, ageRange) =>
-        `Proponha que cada criança escolha um elemento que mais gostou e faça um desenho de observação, tentando reproduzir cor e forma. Ou organize um "museu da natureza" na sala, onde cada grupo expõe seus elementos classificados com cartões de nome. Para a faixa de ${ageRange}, o registro pode ser o desenho livre do elemento escolhido, sem exigência de detalhamento realista.`,
-      children: () =>
-        `As crianças escolhem um elemento e fazem um desenho de observação, tentando reproduzir as cores e formas que viram. Outras organizam o "museu da natureza" com os elementos classificados e cartões de identificação. A atividade de registro é individual ou em pequenos grupos.`,
-      interventions: () => [
-        '"Qual elemento você escolheu desenhar? Por que escolheu este?"',
-        '"Tente desenhar as cores que você viu. Tem mais de uma cor?"',
-        '"No nosso museu, onde vamos colocar as folhas? E as sementes?"',
-        'Para crianças que dizem "não sei desenhar": "Não precisa ser igual! Desenhe do seu jeito o que você viu e sentiu."',
-        'Para crianças com mais habilidade: propor que observem e desenhem um detalhe visto com a lupa.',
-      ],
-    },
-    {
-      title: 'Encerramento e reflexão sobre a natureza',
-      fraction: 2,
-      teacher: (_theme) =>
-        `Reúna as crianças em roda. Pergunte: "O que descobriram sobre os elementos da natureza? O que mais chamou a atenção?". Conduza uma conversa sobre o cuidado com a natureza: "De onde vieram estes elementos? O que podemos fazer para cuidar das plantas e dos animais?". Combine onde guardar os elementos ou se irão devolvê-los à natureza. Encerre agradecendo a exploração.`,
-      children: () =>
-        `As crianças compartilham o que descobriram. Algumas falam sobre texturas, cores ou detalhes observados com a lupa. Participam da conversa sobre o cuidado com a natureza. Ajudam a guardar ou devolver os elementos.`,
-      interventions: () => [
-        '"O que vocês descobriram hoje sobre ${theme} que não sabiam antes?"',
-        '"Por que é importante cuidar das plantas e dos animais?"',
-        '"O que podemos fazer para ajudar a natureza no nosso dia a dia?"',
-        'Registrar descobertas: "A Ana descobriu que as folhas têm linhas chamadas nervuras!"',
-      ],
-    },
-  ],
+  stepSpecs: createStepSpecs('Grupo 3'),
+
+  buildStepSpecs: (_theme, _ageRange, classLevel) =>
+    createStepSpecs(classLevel),
 
   buildSafety: (classLevel, _ageRange): SafetyResult => {
-    const notes: string[] = [];
+    const notes = [
+      'Identificar previamente plantas e elementos naturais utilizados. Em caso de dúvida sobre toxicidade ou irritação, não disponibilizar às crianças.',
+      'Inspecionar os recursos quanto a espinhos, farpas, fungos, insetos, substâncias irritantes e partes que possam se desprender.',
+      'Avaliar riscos de alergia, contato com a pele, ingestão e aspiração de componentes.',
+      'Higienizar os materiais de acordo com sua composição e finalidade.',
+      'Não permitir a ingestão de elementos naturais utilizados na atividade.',
+      'Acompanhar continuamente a exploração e higienizar as mãos após o contato com os materiais.',
+      'Respeitar os seres vivos e evitar retirar plantas, flores ou animais de seus ambientes sem necessidade pedagógica e autorização adequada.',
+    ];
 
-    notes.push(
-      'Inspecionar previamente todos os elementos naturais quanto a insetos, espinhos, fungos, plantas tóxicas ou substâncias irritantes antes de disponibilizá-los às crianças.',
-    );
-    notes.push(
-      'Identificar previamente as plantas coletadas para garantir que não sejam tóxicas ou venenosas. Em caso de dúvida, não utilizar.',
-    );
-    notes.push(
-      'Lavar as mãos das crianças após a manipulação dos elementos naturais.',
-    );
-
-    if (isUnder3(classLevel)) {
+    if (classLevel === 'Grupo 1' || classLevel === 'Grupo 2') {
       notes.push(
-        'Crianças menores de 3 anos podem levar elementos pequenos à boca: selecionar apenas elementos grandes (folhas grandes, galhos grossos) e supervisionar constantemente.',
-      );
-      notes.push(
-        'Evitar sementes pequenas, flores com pétalas soltas e galhos finos que possam quebrar e perfurar.',
+        'Nas turmas de 1 a 3 anos, considerar especialmente a possibilidade de levar objetos à boca. Não utilizar sementes, pedrinhas, flores pequenas, galhos frágeis ou qualquer componente que ofereça risco de ingestão, aspiração ou ferimento.',
       );
     }
 
-    if (isUnder2(classLevel)) {
-      return {
-        notes,
-        alternative:
-          'Para bebês, selecionar apenas elementos grandes e seguros (folhas grandes de plantas não tóxicas, galhos grossos sem pontas). Evitar completamente sementes, flores pequenas e elementos que possam se desprender em partes pequenas. Higienizar todos os elementos antes do uso.',
-      };
-    }
-
-    return { notes, alternative: null };
+    return {
+      notes,
+      alternative:
+        'Se os elementos naturais não forem adequados, realizar a investigação por meio de fotografias, livros, imagens ampliadas, vídeos selecionados ou outros recursos previamente avaliados. Não presumir que um elemento grande ou aparentemente natural seja seguro.',
+    };
   },
 
-  buildAdaptations: (_classLevel, _ageRange) => [
-    'Para crianças com sensibilidade tátil (hipersensibilidade): permitir que usem luvas finas ou que observem com a lupa sem precisar tocar diretamente.',
-    'Para crianças com mobilidade reduzida: posicionar as bandejas e lupas ao alcance, ajustando a altura da mesa ou oferecendo os elementos na mão.',
-    'Para crianças com deficiência visual: priorizar a exploração olfativa e tátil, descrevendo verbalmente cores e formas. Oferecer elementos com texturas e aromas distintos.',
-    'Para crianças que se distraem com facilidade: propor um foco em um único tipo de elemento por vez, reduzindo a quantidade de materiais na bandeja.',
-    'Para crianças com mais capacidade de observação: propor que façam um "diário da natureza" com desenhos e ditados à professora sobre o que observaram.',
-  ],
+  buildAdaptations: (classLevel, _ageRange) => {
+    const adaptations: Record<ClassLevel, string[]> = {
+      'Grupo 1': [
+        'Apresentar poucos recursos por vez e acompanhar de perto as manifestações de interesse.',
+        'Permitir participação por observação, gestos e exploração acompanhada.',
+        'Ajustar a duração e a quantidade de estímulos conforme as reações das crianças.',
+      ],
+      'Grupo 2': [
+        'Oferecer escolhas entre recursos previamente avaliados e permitir repetição das experiências.',
+        'Utilizar imagens e demonstrações concretas para apoiar a observação.',
+        'Respeitar crianças que prefiram observar antes de manipular os recursos.',
+      ],
+      'Grupo 3': [
+        'Disponibilizar imagens e objetos para apoiar comparações e agrupamentos.',
+        'Oferecer apoio motor e recursos de comunicação conforme as necessidades individuais.',
+        'Permitir registros por desenhos, gestos, fala e organização de elementos.',
+      ],
+      'Grupo 4': [
+        'Propor diferentes critérios de comparação e investigação.',
+        'Disponibilizar recursos visuais e registros para apoiar a elaboração de hipóteses.',
+        'Organizar experiências individuais ou coletivas conforme os interesses da turma.',
+      ],
+      'Grupo 5': [
+        'Oferecer recursos para planejamento, observação e registro das investigações.',
+        'Permitir diferentes formas de comunicar resultados e explicar hipóteses.',
+        'Propor novas perguntas investigativas a partir das descobertas das crianças.',
+      ],
+    };
+
+    return adaptations[classLevel];
+  },
 };
