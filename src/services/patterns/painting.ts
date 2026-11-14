@@ -1,170 +1,287 @@
-import type { ActivityPattern, SafetyResult } from '../patternTypes';
-import { isUnder3, isUnder2 } from '../pedagogicalHelpers';
+import type { ClassLevel } from '../../types';
+import type { ActivityPattern, SafetyResult, StepSpec } from '../patternTypes';
+
+const GROUP_GUIDANCE: Record<ClassLevel, {
+  focus: string;
+  experience: string;
+  mediation: string;
+  questions: string[];
+}> = {
+  'Grupo 1': {
+    focus: 'exploração de cores, marcas, movimentos e sensações, respeitando as possibilidades de cada criança',
+    experience: 'experimentar movimentos livres com ferramentas de pintura apropriadas, observando as marcas produzidas no papel',
+    mediation: 'oferecer poucos materiais por vez, demonstrar movimentos simples e acompanhar de perto a exploração',
+    questions: [
+      'O que apareceu no papel?',
+      'Vamos experimentar outra cor?',
+      'O que acontece quando movimentamos o pincel?',
+    ],
+  },
+  'Grupo 2': {
+    focus: 'exploração de ferramentas, movimentos, cores e escolhas pessoais',
+    experience: 'experimentar diferentes gestos de pintura, alternar ferramentas e observar as marcas produzidas',
+    mediation: 'incentivar escolhas, repetição e experimentação, sem exigir que a criança represente algo reconhecível',
+    questions: [
+      'Qual ferramenta você quer experimentar?',
+      'Que marca apareceu quando você fez esse movimento?',
+      'O que acontece se escolhermos outra cor?',
+    ],
+  },
+  'Grupo 3': {
+    focus: 'ampliação das possibilidades de expressão, combinação de cores e representação de ideias',
+    experience: 'explorar combinações de cores, formas, linhas e diferentes maneiras de representar experiências e interesses',
+    mediation: 'conversar sobre as escolhas das crianças e apresentar novas possibilidades sem determinar o resultado da produção',
+    questions: [
+      'Que cores você escolheu para sua criação?',
+      'O que você gostaria de experimentar agora?',
+      'Que outras marcas conseguimos produzir?',
+    ],
+  },
+  'Grupo 4': {
+    focus: 'experimentação artística, criação, observação e ampliação do repertório visual',
+    experience: 'investigar efeitos de ferramentas, suportes, cores e movimentos, construindo composições próprias',
+    mediation: 'propor desafios de experimentação e incentivar que as crianças observem e comentem os efeitos de suas escolhas',
+    questions: [
+      'O que muda quando usamos outra ferramenta?',
+      'Como você conseguiu produzir esse efeito?',
+      'Que combinação gostaria de testar?',
+    ],
+  },
+  'Grupo 5': {
+    focus: 'autoria, investigação de recursos expressivos, planejamento e comunicação por meio da arte',
+    experience: 'planejar uma criação, testar recursos e técnicas, rever escolhas e compartilhar os processos e descobertas',
+    mediation: 'estimular decisões autorais, investigação de possibilidades e reflexão sobre o processo, sem impor um modelo de pintura',
+    questions: [
+      'Que ideia você gostaria de explorar na sua produção?',
+      'Quais materiais podem ajudar a conseguir o efeito que imaginou?',
+      'O que você mudou durante a criação e por quê?',
+    ],
+  },
+};
+
+function createStepSpecs(classLevel: ClassLevel): StepSpec[] {
+  const guidance = GROUP_GUIDANCE[classLevel];
+
+  return [
+    {
+      title: 'Aproximação com o tema e repertório visual',
+      fraction: 2,
+      teacher: (theme) =>
+        `Apresente o tema "${theme}" por meio de imagens, objetos, elementos do cotidiano ou uma breve conversa. Convide as crianças a observar detalhes e compartilhar suas impressões. Para este grupo, valorize ${guidance.focus}. Não apresente um desenho pronto para ser copiado.`,
+      children: () =>
+        'As crianças observam, apontam, comentam, fazem perguntas ou demonstram interesse por elementos apresentados. Cada uma participa conforme suas possibilidades de comunicação.',
+      interventions: () => [
+        'Observar quais imagens, formas ou elementos despertam interesse.',
+        'Acolher comentários, gestos e diferentes interpretações sobre o tema.',
+      ],
+    },
+    {
+      title: 'Exploração dos materiais e ferramentas',
+      fraction: 3,
+      teacher: (_theme, ageRange) =>
+        `Apresente os materiais de pintura previamente selecionados e adequados à faixa de ${ageRange}. Demonstre como utilizar as ferramentas disponíveis e permita experiências iniciais em um suporte de teste. A exploração deve priorizar: ${guidance.experience}.`,
+      children: () =>
+        'As crianças observam, escolhem ferramentas e experimentam marcas, movimentos e combinações. Podem utilizar pincéis, esponjas ou outras ferramentas adequadas à proposta.',
+      interventions: () => [
+        'Que marca essa ferramenta consegue produzir?',
+        'Você gostaria de experimentar outro material?',
+        'Respeitar quem prefere observar antes de experimentar.',
+      ],
+    },
+    {
+      title: 'Experimentação de cores, marcas e possibilidades',
+      fraction: 3,
+      teacher: () =>
+        `Convide as crianças a investigar as possibilidades da pintura. Disponibilize cores e ferramentas adequadas e permita que experimentem movimentos, sobreposições e combinações. ${guidance.mediation}.`,
+      children: () =>
+        'As crianças experimentam diferentes movimentos, cores e ferramentas, observando as marcas e os efeitos produzidos. Podem repetir experiências ou criar novas combinações.',
+      interventions: () => guidance.questions,
+    },
+    {
+      title: 'Criação artística',
+      fraction: 4,
+      teacher: (theme, ageRange) =>
+        `Organize os suportes e materiais para a criação relacionada ao tema "${theme}". Cada criança poderá desenvolver sua própria produção, sem modelo obrigatório. Para a faixa de ${ageRange}, considere o foco: ${guidance.focus}. Acompanhe as escolhas, ofereça ajuda quando solicitada e evite corrigir ou substituir as decisões artísticas das crianças.`,
+      children: () =>
+        'As crianças criam utilizando os materiais disponíveis, fazem escolhas e podem modificar suas produções durante o processo. Algumas podem concentrar-se em movimentos e cores; outras podem construir representações, composições ou narrativas visuais.',
+      interventions: () => [
+        'O que você gostaria de fazer com esses materiais?',
+        'Há alguma coisa que você deseja mudar ou experimentar?',
+        'Valorizar o processo de criação, sem comparar as produções.',
+        'Oferecer suporte adaptado quando uma criança demonstrar necessidade.',
+      ],
+    },
+    {
+      title: 'Compartilhamento e apreciação',
+      fraction: 3,
+      teacher: () =>
+        'Convide as crianças a observar suas produções e, se desejarem, compartilhar o que fizeram. Organize um espaço para deixar os trabalhos secarem e combine com a turma como serão guardados ou apresentados. Valorize as escolhas e os processos, sem estabelecer uma classificação entre as pinturas.',
+      children: () =>
+        'As crianças podem mostrar suas produções, comentar escolhas, observar trabalhos dos colegas ou simplesmente acompanhar a apreciação. Também podem participar da organização dos materiais.',
+      interventions: () => [
+        'Que parte da sua produção você gostaria de mostrar?',
+        'O que você descobriu enquanto pintava?',
+        'Que materiais você gostaria de experimentar em outra ocasião?',
+        'Registrar falas, gestos, escolhas e estratégias observadas.',
+      ],
+    },
+  ];
+}
 
 export const painting: ActivityPattern = {
   id: 'painting',
-  keywords: ['pintura', 'pintar', 'tinta', 'aquarela', 'guache', 'cor', 'cores', 'pincel', 'arte', 'desenho', 'desenhar'],
+
+  keywords: [
+    'pintura',
+    'pintar',
+    'tinta',
+    'aquarela',
+    'guache',
+    'cor',
+    'cores',
+    'pincel',
+    'arte',
+    'desenho',
+    'desenhar',
+  ],
+
   description: 'Pintura e expressão artística',
+
   bnccFields: [
     'Traços, sons, cores e formas',
     'Corpo, gestos e movimentos',
     'Escuta, fala, pensamento e imaginação',
   ],
 
-  buildObjectives: (theme, ageRange) => [
-    `Explorar a expressão artística por meio da pintura sobre o tema "${theme}", adequada à faixa de ${ageRange}, valorizando a livre criação sem modelos pré-definidos.`,
-    `Desenvolver a coordenação motora fina e o controle voluntário de movimentos ao manusear pincéis de diferentes tamanhos e espessuras.`,
-    `Estimular a percepção visual e a diferenciação de cores, promovendo a experimentação de misturas cromáticas e a identificação de tonalidades.`,
-    `Promover a criatividade, a imaginação e a expressão pessoal por meio da produção artística individual.`,
-    `Favorecer a apreciação estética e o respeito pelas produções dos colegas, desenvolvendo a escuta e a observação atenta.`,
+  buildBnccFields: () => [
+    'Traços, sons, cores e formas',
+    'Corpo, gestos e movimentos',
+    'Escuta, fala, pensamento e imaginação',
   ],
 
-  buildMaterials: (theme, classLevel) => {
-    const base = [
-      `Tinta guache atóxica (certificada para uso infantil) nas cores relacionadas ao tema "${theme}"`,
-      'Pincéis de cerdas macias em pelo menos 2 tamanhos (fino e grosso)',
-      `Papel sulfite ou papel kraft (tamanho suficiente para a faixa etária) para a atividade sobre "${theme}"`,
-      'Aventais ou camisetas velhas para proteger as roupas',
-      'Potinhos com água para enxaguar os pincéis',
-      'Plástico ou toalha de mesa para forrar toda a superfície',
-      'Pano úmido para limpeza imediata de respingos',
-      'Cartazes, imagens ou objetos relacionados ao tema para inspiração visual',
-    ];
+  buildObjectives: (theme, _ageRange, classLevel) => {
+    const objectives: Record<ClassLevel, string[]> = {
+      'Grupo 1': [
+        `Explorar cores, marcas e movimentos por meio de experiências de pintura relacionadas ao tema "${theme}".`,
+        'Ampliar as possibilidades de expressão corporal e gestual ao experimentar ferramentas e suportes.',
+        'Investigar relações entre os movimentos realizados e as marcas produzidas.',
+      ],
+      'Grupo 2': [
+        `Experimentar diferentes ferramentas e movimentos de pintura relacionados ao tema "${theme}".`,
+        'Ampliar as possibilidades de escolha e expressão por meio de cores, marcas e gestos.',
+        'Explorar características dos materiais e observar os efeitos de suas ações.',
+      ],
+      'Grupo 3': [
+        `Expressar ideias, experiências e interesses por meio de produções artísticas relacionadas ao tema "${theme}".`,
+        'Experimentar combinações de cores, linhas, formas e diferentes ferramentas.',
+        'Ampliar a autonomia e o repertório expressivo durante a criação.',
+      ],
+      'Grupo 4': [
+        `Investigar possibilidades de composição e expressão artística a partir do tema "${theme}".`,
+        'Experimentar efeitos produzidos por diferentes ferramentas, suportes, cores e movimentos.',
+        'Compartilhar impressões e respeitar diferentes formas de criação.',
+      ],
+      'Grupo 5': [
+        `Planejar e desenvolver produções autorais relacionadas ao tema "${theme}", escolhendo recursos expressivos.`,
+        'Investigar técnicas, materiais e combinações para produzir diferentes efeitos visuais.',
+        'Comunicar ideias e refletir sobre escolhas e descobertas realizadas durante o processo artístico.',
+      ],
+    };
 
-    if (isUnder2(classLevel)) {
-      base[1] = 'Pincéis de cabo grosso e cerdas macias (fácil de segurar para bebês)';
-      base[2] = 'Papel kraft em folhas grandes (pelo menos A3) fixado na mesa com fita';
-    }
-
-    return base;
+    return objectives[classLevel];
   },
 
-  stepSpecs: [
-    {
-      title: 'Acolhida e apresentação do tema',
-      fraction: 3,
-      teacher: (theme, ageRange) =>
-        `Receba as crianças em roda e apresente o tema "${theme}" por meio de imagens, objetos ou cartazes. Conduza uma conversa inicial: "O que vocês veem nestas imagens? Quais cores aparecem?". Apresente as tintas em potes abertos, nomeando cada cor. Mostre os pincéis e explique que vão pintar sobre o que observaram. Para a faixa de ${ageRange}, use frases curtas e demonstrações visuais claras.`,
-      children: () =>
-        `As crianças observam as imagens e objetos, comentam o que veem e apontam cores que reconhecem. Quando as tintas são apresentadas, algumas podem querer apontar ou tocar os potes. Participam da roda atentas e curiosas.`,
-      interventions: (theme) => [
-        `"Olhem esta imagem sobre ${theme}. O que vocês veem? Que cores tem?"`,
-        '"Quem já viu essa cor em algum lugar? Onde?"',
-        '"O que vocês acham que vamos fazer com estas tintas e pincéis?"',
-        'Para crianças que não verbalizam: apontar cores e nomeá-las, incentivando que apontem de volta.',
-      ],
-    },
-    {
-      title: 'Exploração das cores e dos materiais',
-      fraction: 3,
-      teacher: (_theme, ageRange) =>
-        `Conduza as crianças à mesa forrada. Permita que observem as tintas de perto e, se adequado à faixa de ${ageRange}, que toquem levemente com o dedo para sentir a textura e a temperatura. Mostre como mergulhar o pincel na tinta e como passar no papel. Demonstre traços largos e finos, e incentive que observem a diferença. Apresente a possibilidade de misturar duas cores para descobrir uma nova.`,
-      children: () =>
-        `As crianças tocam as tintas (se permitido), observam as cores de perto e experimentam segurar o pincel. Algumas já começam a fazer traços no papel de forma exploratória. A exploração é livre, com a professora próxima nomeando cores e demonstrando possibilidades.`,
-      interventions: () => [
-        '"O que acontece quando misturamos o vermelho com o amarelo? Vamos descobrir juntos?"',
-        '"O pincel grosso faz um traço diferente do pincel fino. Qual a diferença?"',
-        '"Sintam a tinta no dedo — é quente ou fria? É lisinha ou grossinha?"',
-        'Para crianças que hesitam: segurar a mão e fazer os primeiros traços juntos, depois soltar gradualmente.',
-      ],
-    },
-    {
-      title: 'Demonstração do uso dos pincéis',
-      fraction: 2,
-      teacher: () =>
-        `Reúna a atenção do grupo. Demonstre passo a passo: (1) segurar o pincel pelo cabo; (2) mergulhar a ponta na tinta sem encharcar; (3) deixar o excesso escorrer no bordo do pote; (4) passar no papel com movimentos suaves. Mostre como limpar o pincel na água antes de trocar de cor. Enfatize o cuidado com a roupa (aventais) e com a mesa forrada.`,
-      children: () =>
-        `As crianças observam a demonstração. Algumas imitam o gesto de segurar o pincel e o movimento de pintar no ar. Permanecem atentas aos passos mostrados pela professora.`,
-      interventions: () => [
-        '"Por que precisamos limpar o pincel na água antes de trocar de cor?"',
-        '"O que acontece se a gente mergulhar o pincel todo na tinta?"',
-        '"Vamos contar os passos juntos: pega, mergulha, escorre, pinta!"',
-        'Convidar uma criança para repetir os passos na demonstração, consolidando o aprendizado.',
-      ],
-    },
-    {
-      title: 'Criação individual ou em pequenos grupos',
-      fraction: 7,
-      teacher: (theme, ageRange) =>
-        `Distribua o papel e os pincéis para cada criança ou para grupos de 2 ou 3. Cada criança pinta livremente sobre o tema "${theme}", sem modelo a copiar. A professora circula entre as mesas, aproximando-se de cada criança, valorizando cada produção e fazendo perguntas abertas sobre o que estão criando. Para a faixa de ${ageRange}, o foco é o processo de explorar a tinta e os movimentos, não o resultado final. Ofereça ajuda técnica (limpar o pincel, trocar a cor) sem interferir na criação.`,
-      children: () =>
-        `As crianças pintam livremente sobre o tema. Algumas fazem traços largos e cobrem grandes áreas, outras fazem pontos e linhas detalhadas. Misturam cores, trocam de pincel, pedem mais tinta. A produção é individual e autônoma, com a professora próxima apoiando.`,
-      interventions: () => [
-        '"Me conta sobre o que você está pintando. O que é esta parte aqui?"',
-        '"Você quer misturar estas duas cores? O que acha que vai acontecer?"',
-        '"Estou vendo que você usou muita cor vermelha. Por que escolheu essa cor?"',
-        'Para crianças que dizem "não sei pintar": "Não precisa saber! Pintar é brincar com as cores. Que tal começar com a cor que você mais gosta?"',
-        'Para crianças que terminam rápido: oferecer outro papel ou propor que experimentem uma cor que ainda não usaram.',
-      ],
-    },
-    {
-      title: 'Exposição e roda de apreciação',
-      fraction: 3,
-      teacher: () =>
-        `Organize os trabalhos em uma "exposição" sobre uma mesa ou varal na sala. Reúna as crianças em roda e conduza a apreciação: passe por cada trabalho, pergunte à autora sobre o que pintou e convide os colegas a observarem. Valorize a diversidade de produções: "Cada um pintou do seu jeito e todos são especiais". Encerre agradecendo a participação e combinando onde os trabalhos ficarão expostos.`,
-      children: () =>
-        `As crianças acompanham a exposição de seus trabalhos. Cada uma é convidada a falar sobre o que pintou. Observam as produções dos colegas, comentam cores e formas que reconhecem. A roda é de apreciação e respeito mútuo.`,
-      interventions: () => [
-        '"Maria, conte para seus amigos o que você pintou. O que estas cores significam para você?"',
-        '"Quem mais usou a cor azul? Vocês notaram como cada um usou de um jeito diferente?"',
-        '"O que vocês sentiram ao ver o trabalho do colega? O que mais chamou a atenção?"',
-        'Reforçar que não existe "certo" ou "errado" na arte: "Todas as pinturas são bonitas porque cada uma foi feita com o jeito de cada um."',
-      ],
-    },
-  ],
+  buildMaterials: (theme, classLevel) => {
+    const materials = [
+      'Suportes adequados à proposta, como papel, papelão ou papel kraft',
+      'Tintas apropriadas para uso infantil, com identificação e orientação de uso do fabricante',
+      'Ferramentas de pintura selecionadas conforme a experiência proposta',
+      'Recipientes estáveis para organizar pequenas porções de tinta',
+      'Proteção para a superfície de trabalho',
+      'Materiais para limpeza e organização após a atividade',
+      `Referências visuais ou objetos relacionados ao tema "${theme}", se contribuírem para a exploração`,
+    ];
+
+    if (classLevel === 'Grupo 1' || classLevel === 'Grupo 2') {
+      return [
+        ...materials,
+        'Ferramentas de fácil preensão, resistentes e adequadas à exploração acompanhada',
+        'Suportes amplos e fixados de maneira estável, quando necessário',
+      ];
+    }
+
+    if (classLevel === 'Grupo 3') {
+      return [
+        ...materials,
+        'Pincéis e esponjas de diferentes formatos para ampliar as possibilidades de criação',
+      ];
+    }
+
+    return [
+      ...materials,
+      'Ferramentas variadas para investigar linhas, texturas e efeitos',
+      'Suportes de diferentes dimensões, conforme o objetivo da proposta',
+    ];
+  },
+
+  stepSpecs: createStepSpecs('Grupo 3'),
+
+  buildStepSpecs: (_theme, _ageRange, classLevel) =>
+    createStepSpecs(classLevel),
 
   buildSafety: (classLevel, _ageRange): SafetyResult => {
-    const notes: string[] = [];
+    const notes = [
+      'Verificar a identificação, a procedência e as orientações do fabricante de todos os materiais utilizados.',
+      'Utilizar apenas produtos apropriados para a faixa etária e para a finalidade artística proposta.',
+      'A supervisão deve ser próxima, especialmente durante o uso de tintas e ferramentas.',
+      'Não permitir que tintas, pincéis ou outros materiais sejam colocados na boca, nariz ou ouvidos.',
+      'Verificar se ferramentas, recipientes e suportes estão íntegros e sem pontas, farpas ou bordas cortantes.',
+      'Considerar alergias, sensibilidades e necessidades individuais antes de selecionar os materiais.',
+      'Organizar o espaço para evitar derramamentos e limpar imediatamente superfícies escorregadias.',
+    ];
 
-    notes.push(
-      'Utilizar exclusivamente tintas atóxicas certificadas para uso infantil (verificar rótulo e certificação do produto).',
-    );
-
-    if (isUnder3(classLevel)) {
+    if (classLevel === 'Grupo 1' || classLevel === 'Grupo 2') {
       notes.push(
-        'Crianças menores de 3 anos frequentemente levam as mãos à boca: a supervisão deve ser direta e contínua para evitar ingestão de tinta.',
-      );
-      notes.push(
-        'Considere tintas comestíveis (feitas com corante alimentar e água) como alternativa mais segura para crianças que ainda levam tudo à boca.',
-      );
-    } else {
-      notes.push(
-        'Oriente as crianças a não levar os pincéis ou as mãos tintadas à boca.',
+        'Nas turmas de 1 a 3 anos, considerar especialmente a possibilidade de contato com a boca e ingestão acidental. A escolha dos produtos deve seguir as orientações do fabricante e os protocolos da instituição, com acompanhamento direto do adulto.',
       );
     }
 
-    notes.push(
-      'Proteger as roupas com aventais e forrar toda a superfície de trabalho com plástico ou toalha.',
-    );
-    notes.push(
-      'Manter os potes de tinta fechados quando não estiverem em uso ativo para evitar derramamentos e contato inadvertido.',
-    );
-
-    if (isUnder2(classLevel)) {
-      return {
-        notes,
-        alternative:
-          'Para bebês que ainda levam tudo à boca, substituir a tinta guache por tintas caseiras comestíveis (iogurte com corante alimentar ou água com corante e amido de milho). Estas alternativas são seguras em caso de ingestão incidental e oferecem a mesma experiência sensorial e de exploração cromática.',
-      };
-    }
-
-    return { notes, alternative: null };
+    return {
+      notes,
+      alternative:
+        'Se algum material não for adequado a uma criança, substituí-lo por outro recurso artístico previamente avaliado. Não considerar tintas caseiras, alimentos ou produtos alternativos automaticamente seguros.',
+    };
   },
 
   buildAdaptations: (classLevel, _ageRange) => {
-    const adaptations = [
-      'Para crianças com coordenação motora menos desenvolvida: oferecer pincéis de cabo grosso e mais leves, ou permitir a pintura com os dedos e esponjas como alternativa ao pincel.',
-      'Para crianças com deficiência visual: usar tintas com texturas distintas (tinta com areia, tinta em relevo) e nomear as cores verbalmente, proporcionando reconhecimento pelo tato.',
-      'Para crianças com hipersensibilidade tátil: permitir o uso de luvas finas ou oferecer pincéis com cabo mais longo para maior distância da tinta.',
-      'Para crianças que concluem rapidamente: propor a mistura de novas cores, a pintura em formato maior ou a criação de uma segunda obra sobre o tema.',
-    ];
+    const adaptations: Record<ClassLevel, string[]> = {
+      'Grupo 1': [
+        'Oferecer experiências curtas, com poucos materiais por vez e acompanhamento próximo.',
+        'Disponibilizar suportes estáveis e ferramentas adequadas à exploração motora da criança.',
+        'Permitir participação por observação, gestos, movimentos ou experimentação acompanhada.',
+      ],
+      'Grupo 2': [
+        'Oferecer ferramentas de fácil preensão e suportes que permitam movimentos amplos.',
+        'Permitir que a criança escolha cores e ferramentas entre opções disponíveis.',
+        'Respeitar o tempo de exploração e a repetição de movimentos.',
+      ],
+      'Grupo 3': [
+        'Disponibilizar ferramentas variadas para ampliar as possibilidades de expressão.',
+        'Oferecer apoio para organizar materiais e realizar escolhas sem interferir na criação.',
+        'Permitir que a criança explique sua produção por fala, gestos ou demonstração.',
+      ],
+      'Grupo 4': [
+        'Propor diferentes suportes e ferramentas para ampliar a investigação artística.',
+        'Organizar experiências individuais ou coletivas conforme os interesses da turma.',
+        'Disponibilizar referências visuais sem exigir cópias ou resultados padronizados.',
+      ],
+      'Grupo 5': [
+        'Disponibilizar recursos variados para que as crianças planejem e desenvolvam suas criações.',
+        'Oferecer oportunidades de experimentar, rever escolhas e compartilhar processos.',
+        'Permitir registros e apresentações em diferentes linguagens, respeitando as preferências individuais.',
+      ],
+    };
 
-    if (isUnder2(classLevel)) {
-      adaptations.push(
-        'Para bebês que ainda não seguram o pincel: fixar o papel na mesa e oferecer pintura com as mãos ou com esponjas grandes, que são mais fáceis de manipular.',
-      );
-    }
-
-    return adaptations;
+    return adaptations[classLevel];
   },
 };
