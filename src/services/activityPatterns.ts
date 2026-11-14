@@ -9,6 +9,7 @@ import { sensoryPlay } from './patterns/sensoryPlay';
 import { generic } from './patterns/generic';
 import {
   CLASS_AGE_RANGE,
+  getClassPedagogicalProfile,
   buildSteps,
   verifyTimeSum,
   parseDurationMinutes,
@@ -18,14 +19,13 @@ import {
  * Sistema de interpretação de atividades pedagógicas (protótipo).
  *
  * Cada padrão descreve um tipo de atividade recorrente na Educação Infantil.
- * O tema informado pelo professor é comparado a palavras-chave e, quando há
- * correspondência, o padrão fornece objetivos, materiais, etapas, cuidados de
- * segurança, adaptações e campos da BNCC coerentes com a proposta. Quando
- * nenhum padrão corresponde, usa-se o plano genérico, que respeita o tema sem
- * inserir materiais alheios à proposta.
+ * O tema informado é comparado a palavras-chave e, quando há correspondência,
+ * o padrão fornece objetivos, materiais, etapas e cuidados de segurança.
  *
- * Esta camada está preparada para ser substituída por uma API de IA: o
- * contrato (tema + turma + duração → PlanningResult) já é o mesmo.
+ * O perfil pedagógico da turma complementa todos os planejamentos,
+ * considerando participação, mediação, observação e diferentes ritmos.
+ *
+ * Esta camada utiliza padrões e regras locais. Não há uma API de IA conectada.
  */
 
 const PATTERNS: ActivityPattern[] = [
@@ -53,11 +53,14 @@ function matchPattern(theme: string): ActivityPattern {
     const matchedKeywords = pattern.keywords
       .map(normalizeText)
       .filter((keyword) => normalizedTheme.includes(keyword));
+
     if (matchedKeywords.length === 0) continue;
 
-    // Prioriza a proposta mais específica: palavras-chave mais informativas
-    // têm maior peso; em empate, vence o padrão com mais correspondências.
-    const score = matchedKeywords.reduce((sum, keyword) => sum + keyword.length ** 2, 0);
+    const score = matchedKeywords.reduce(
+      (sum, keyword) => sum + keyword.length ** 2,
+      0,
+    );
+
     if (score > bestScore) {
       bestScore = score;
       bestMatch = pattern;
@@ -74,27 +77,63 @@ export function generatePlanningContent(
 ): PlanningResult {
   const pattern = matchPattern(theme);
   const ageRange = CLASS_AGE_RANGE[classLevel];
+  const profile = getClassPedagogicalProfile(classLevel);
   const totalMinutes = parseDurationMinutes(duration);
 
-  const steps = buildSteps(pattern.stepSpecs, theme, ageRange, totalMinutes);
+  const steps = buildSteps(
+    pattern.stepSpecs,
+    theme,
+    ageRange,
+    totalMinutes,
+  );
 
-  // Verificação interna: a soma dos tempos deve ser exatamente o total informado.
-  // A geração só prossegue se a soma corresponder exatamente ao tempo informado.
+  // Acrescenta orientações pedagógicas específicas da turma ao planejamento.
+  if (steps.length > 0) {
+    steps[0] = {
+      ...steps[0],
+      teacherAction:
+        `${steps[0].teacherAction}\n\n` +
+        `Mediação pedagógica: ${profile.mediation}`,
+      childrenAction:
+        `${steps[0].childrenAction}\n\n` +
+        `Formas de participação: ${profile.participation}`,
+    };
+
+    const lastIndex = steps.length - 1;
+
+    steps[lastIndex] = {
+      ...steps[lastIndex],
+      interventions: [
+        ...steps[lastIndex].interventions,
+        `Observação pedagógica: ${profile.observation}`,
+      ],
+    };
+  }
+
+  // A soma dos tempos precisa corresponder exatamente à duração informada.
   if (!verifyTimeSum(steps, totalMinutes)) {
-    throw new Error('A distribuição do tempo não corresponde à duração informada.');
+    throw new Error(
+      'A distribuição do tempo não corresponde à duração informada.',
+    );
   }
 
   const safety = pattern.buildSafety(classLevel, ageRange);
   const adaptations = pattern.buildAdaptations(classLevel, ageRange);
 
   return {
-    objectives: pattern.buildObjectives(theme, ageRange),
+    objectives: [
+      ...pattern.buildObjectives(theme, ageRange),
+      `Foco pedagógico da turma: ${profile.focus}`,
+    ],
     bnccFields: pattern.bnccFields,
     materials: pattern.buildMaterials(theme, classLevel),
     steps,
     safetyNotes: safety.notes,
     safetyAlternative: safety.alternative,
-    adaptations,
+    adaptations: [
+      ...adaptations,
+      `Respeite os diferentes ritmos, interesses e formas de participação. Ofereça apoio quando necessário, sem obrigar todas as crianças a realizar a atividade da mesma maneira.`,
+    ],
   };
 }
 
