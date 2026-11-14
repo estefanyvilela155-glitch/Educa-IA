@@ -1,4 +1,3 @@
-
 export type ClassLevel =
   | 'Grupo 1'
   | 'Grupo 2'
@@ -21,13 +20,17 @@ export interface PlanningStep {
 }
 
 export interface PlanningResult {
+  experienceDescription: string;
+  pedagogicalIntent: string;
   objectives: string[];
   bnccFields: string[];
+  bnccRationale: string;
   materials: string[];
   steps: PlanningStep[];
   safetyNotes: string[];
   safetyAlternative: string | null;
   adaptations: string[];
+  observationIndicators: string[];
 }
 
 export interface GenerateOptions {
