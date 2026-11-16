@@ -1,3 +1,4 @@
+
 declare const process: {
   env: Record<string, string | undefined>;
 };
@@ -397,13 +398,8 @@ export default {
     if (!isObject(input)) {
       return jsonError('Informe os dados do planejamento.', 400);
     }
-    const { classLevel, theme, duration, inclusionSupports } = input;
 
-const selectedSupports = Array.isArray(inclusionSupports)
-  ? inclusionSupports
-      .filter((item: unknown) => typeof item === 'string')
-      .slice(0, 10)
-  : [];
+    const { classLevel, theme, duration } = input;
 
     if (
       typeof classLevel !== 'string' ||
@@ -452,17 +448,6 @@ Grupo: ${classLevel}
 Faixa etária: ${ageRange}
 Tema ou proposta: ${theme.trim()}
 Tempo disponível: ${totalMinutes} minutos
-Recursos de inclusão e acessibilidade selecionados:
-${
-  selectedSupports.length > 0
-    ? selectedSupports.map((item: string) => `- ${item}`).join('\n')
-    : 'Nenhum recurso específico selecionado. Considere diferentes formas de participação de maneira ampla.'
-}
-
-Considere essas escolhas ao elaborar as adaptações inclusivas.
-Apresente estratégias concretas e relacionadas à atividade.
-Não presuma diagnósticos ou características individuais.
-As opções são sugestões para a professora avaliar, não determinações.
 
 Crie um planejamento completo e contextualizado.
 
