@@ -1,35 +1,18 @@
 import type { GenerateOptions, PlanningResult } from '../types';
+import { generatePlanningContent } from './activityPatterns';
 
 export async function generatePlanning(
   options: GenerateOptions,
 ): Promise<PlanningResult> {
-  const response = await fetch('/api/generate-planning', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(options.input),
-    signal: options.signal,
-  });
-
-  let data: {
-    result?: PlanningResult;
-    error?: string;
-  };
-
-  try {
-    data = await response.json();
-  } catch {
-    throw new Error(
-      'O servidor retornou uma resposta inválida. Tente novamente.',
-    );
+  if (options.signal?.aborted) {
+    throw new Error('Geração cancelada.');
   }
 
-  if (!response.ok || !data.result) {
-    throw new Error(
-      data.error || 'Não foi possível gerar o planejamento.',
-    );
-  }
+  const { classLevel, theme, duration } = options.input;
 
-  return data.result;
+  return generatePlanningContent(
+    classLevel,
+    theme,
+    duration,
+  );
 }
