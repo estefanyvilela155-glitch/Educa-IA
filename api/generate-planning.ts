@@ -397,8 +397,13 @@ export default {
     if (!isObject(input)) {
       return jsonError('Informe os dados do planejamento.', 400);
     }
+    const { classLevel, theme, duration, inclusionSupports } = input;
 
-    const { classLevel, theme, duration } = input;
+const selectedSupports = Array.isArray(inclusionSupports)
+  ? inclusionSupports
+      .filter((item: unknown) => typeof item === 'string')
+      .slice(0, 10)
+  : [];
 
     if (
       typeof classLevel !== 'string' ||
