@@ -1,3 +1,4 @@
+
 import type { ClassLevel, PlanningResult } from '../types';
 import type { ActivityPattern } from './patternTypes';
 
@@ -14,17 +15,8 @@ import {
   buildSteps,
   verifyTimeSum,
   parseDurationMinutes,
+  getClassPedagogicalProfile,
 } from './pedagogicalHelpers';
-
-/**
- * Organiza a geração dos planejamentos pedagógicos.
- *
- * O sistema utiliza padrões locais para interpretar o tema informado.
- * Cada padrão pode fornecer objetivos, etapas, materiais, cuidados
- * e adaptações específicos para o grupo selecionado.
- *
- * Este protótipo utiliza regras locais. Não há uma API de IA conectada.
- */
 
 const PATTERNS: ActivityPattern[] = [
   grainTransfer,
@@ -77,10 +69,9 @@ export function generatePlanningContent(
 ): PlanningResult {
   const pattern = matchPattern(theme);
   const ageRange = CLASS_AGE_RANGE[classLevel];
+  const profile = getClassPedagogicalProfile(classLevel);
   const totalMinutes = parseDurationMinutes(duration);
 
-  // Quando disponível, utiliza etapas construídas especificamente
-  // para o tema e o grupo selecionado.
   const stepSpecs =
     pattern.buildStepSpecs?.(theme, ageRange, classLevel) ??
     pattern.stepSpecs;
@@ -117,15 +108,25 @@ export function generatePlanningContent(
     pattern.bnccFields;
 
   return {
+    experienceDescription:
+      `Experiência pedagógica sobre ${theme}, organizada para crianças de ${ageRange}. ${pattern.description}`,
+
+    pedagogicalIntent:
+      `Promover experiências de ${profile.focus.toLowerCase()} por meio da exploração do tema ${theme}, respeitando os diferentes ritmos e formas de participação das crianças.`,
+
     objectives,
     bnccFields,
+
+    bnccRationale:
+      `Os campos de experiência selecionados orientam vivências relacionadas ao tema ${theme}, considerando a faixa etária de ${ageRange} e as interações e brincadeiras como eixos da prática pedagógica.`,
+
     materials: pattern.buildMaterials(theme, classLevel),
     steps,
     safetyNotes: safety.notes,
     safetyAlternative: safety.alternative,
     adaptations,
+    observationIndicators: [profile.observation],
   };
 }
 
 export { CLASS_AGE_RANGE };
-
