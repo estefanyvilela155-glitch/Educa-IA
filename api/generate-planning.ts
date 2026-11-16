@@ -452,6 +452,17 @@ Grupo: ${classLevel}
 Faixa etária: ${ageRange}
 Tema ou proposta: ${theme.trim()}
 Tempo disponível: ${totalMinutes} minutos
+Recursos de inclusão e acessibilidade selecionados:
+${
+  selectedSupports.length > 0
+    ? selectedSupports.map((item: string) => `- ${item}`).join('\n')
+    : 'Nenhum recurso específico selecionado. Considere diferentes formas de participação de maneira ampla.'
+}
+
+Considere essas escolhas ao elaborar as adaptações inclusivas.
+Apresente estratégias concretas e relacionadas à atividade.
+Não presuma diagnósticos ou características individuais.
+As opções são sugestões para a professora avaliar, não determinações.
 
 Crie um planejamento completo e contextualizado.
 
