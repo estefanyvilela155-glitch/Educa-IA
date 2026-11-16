@@ -1,70 +1,36 @@
+
 import { useState } from 'react';
 import Header from './components/Header';
 import PlanningForm from './components/PlanningForm';
 import PlanningResult from './components/PlanningResult';
-import StoryForm from './components/StoryForm';
-import StoryResult from './components/StoryResult';
 import { generatePlanning } from './services/planningService';
-import { generateStory } from './services/storyService';
 import type {
   PlanningInput,
   PlanningResult as PlanningResultType,
-  StoryInput,
-  StoryResult as StoryResultType,
 } from './types';
 import './App.css';
 
-type ActiveFeature = 'planning' | 'story';
-
 function App() {
-  const [activeFeature, setActiveFeature] =
-    useState<ActiveFeature>('planning');
-
-  const [planningResult, setPlanningResult] =
-    useState<PlanningResultType | null>(null);
-
-  const [lastPlanningInput, setLastPlanningInput] =
-    useState<PlanningInput | null>(null);
-
-  const [storyResult, setStoryResult] =
-    useState<StoryResultType | null>(null);
-
+  const [result, setResult] = useState<PlanningResultType | null>(null);
+  const [lastInput, setLastInput] = useState<PlanningInput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleGeneratePlanning = async (input: PlanningInput) => {
+  const handleGenerate = async (input: PlanningInput) => {
     setIsLoading(true);
     setError('');
-    setPlanningResult(null);
+    setResult(null);
 
     try {
       const generated = await generatePlanning({ input });
-      setLastPlanningInput(input);
-      setPlanningResult(generated);
+
+      setLastInput(input);
+      setResult(generated);
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : 'Não foi possível gerar o planejamento.',
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGenerateStory = async (input: StoryInput) => {
-    setIsLoading(true);
-    setError('');
-    setStoryResult(null);
-
-    try {
-      const generated = await generateStory({ input });
-      setStoryResult(generated);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Não foi possível criar a história.',
+          : 'Não foi possível gerar o planejamento. Tente novamente.',
       );
     } finally {
       setIsLoading(false);
@@ -72,15 +38,9 @@ function App() {
   };
 
   const handleReset = () => {
-    setPlanningResult(null);
-    setLastPlanningInput(null);
-    setStoryResult(null);
+    setResult(null);
+    setLastInput(null);
     setError('');
-  };
-
-  const changeFeature = (feature: ActiveFeature) => {
-    handleReset();
-    setActiveFeature(feature);
   };
 
   return (
@@ -90,66 +50,21 @@ function App() {
       <main className="app__main">
         <div className="app__hero">
           <h2 className="app__hero-title">
-            Educação com criatividade, intenção e inclusão
+            Crie planejamentos pedagógicos com facilidade
           </h2>
 
           <p className="app__hero-text">
-            O Educa.IA apoia educadores na criação de experiências
-            pedagógicas e histórias educativas, respeitando diferentes
-            formas de aprender, participar e descobrir o mundo.
+            Selecione a turma, informe o tema e o tempo disponível.
+            O Educa.IA interpreta a proposta e estrutura uma experiência
+            pedagógica contextualizada.
           </p>
         </div>
 
-        <nav className="feature-tabs" aria-label="Funcionalidades">
-          <button
-            type="button"
-            className={activeFeature === 'planning' ? 'feature-tabs__button active' : 'feature-tabs__button'}
-            onClick={() => changeFeature('planning')}
-          >
-            Planejamento pedagógico
-          </button>
-
-          <button
-            type="button"
-            className={activeFeature === 'story' ? 'feature-tabs__button active' : 'feature-tabs__button'}
-            onClick={() => changeFeature('story')}
-          >
-            Criar história educativa
-          </button>
-        </nav>
-
         <div className="app__card">
-          {activeFeature === 'planning' ? (
-            <>
-              <div className="feature-heading">
-                <h2>Planejamento pedagógico</h2>
-                <p>
-                  Organize experiências contextualizadas e considere
-                  diferentes possibilidades de participação.
-                </p>
-              </div>
-
-              <PlanningForm
-                onGenerate={handleGeneratePlanning}
-                isLoading={isLoading}
-              />
-            </>
-          ) : (
-            <>
-              <div className="feature-heading">
-                <h2>Histórias educativas</h2>
-                <p>
-                  Crie narrativas originais para estimular imaginação,
-                  linguagem, criatividade e aprendizagem.
-                </p>
-              </div>
-
-              <StoryForm
-                onGenerate={handleGenerateStory}
-                isLoading={isLoading}
-              />
-            </>
-          )}
+          <PlanningForm
+            onGenerate={handleGenerate}
+            isLoading={isLoading}
+          />
         </div>
 
         {error && (
@@ -162,18 +77,16 @@ function App() {
           <div className="app__loading" aria-live="polite">
             <div className="app__spinner" />
             <p>
-              {activeFeature === 'planning'
-                ? 'Construindo seu planejamento...'
-                : 'Criando sua história...'}
+              Analisando o tema e construindo seu planejamento...
             </p>
           </div>
         )}
 
-        {planningResult && lastPlanningInput && !isLoading && (
+        {result && lastInput && !isLoading && (
           <div className="app__card app__card--result">
             <PlanningResult
-              input={lastPlanningInput}
-              result={planningResult}
+              input={lastInput}
+              result={result}
             />
 
             <button className="app__reset" onClick={handleReset}>
@@ -181,22 +94,12 @@ function App() {
             </button>
           </div>
         )}
-
-        {storyResult && !isLoading && (
-          <div className="app__card app__card--result">
-            <StoryResult result={storyResult} />
-
-            <button className="app__reset" onClick={handleReset}>
-              Criar outra história
-            </button>
-          </div>
-        )}
       </main>
 
       <footer className="app__footer">
         <p>
-          Educa.IA · Tecnologia como apoio à educação ·{' '}
-          {new Date().getFullYear()}
+          Educa.IA &middot; Protótipo com inteligência artificial
+          &middot; {new Date().getFullYear()}
         </p>
       </footer>
     </div>
