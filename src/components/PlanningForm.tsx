@@ -15,22 +15,54 @@ const CLASS_LEVELS: ClassLevel[] = [
   'Grupo 5',
 ];
 
-const DURATION_PRESETS = ['30 minutos', '45 minutos', '60 minutos', '90 minutos'];
+const DURATION_PRESETS = [
+  '30 minutos',
+  '45 minutos',
+  '60 minutos',
+  '90 minutos',
+];
+
+const INCLUSION_OPTIONS = [
+  'Apoios visuais e demonstrações',
+  'Instruções curtas, divididas em etapas',
+  'Diferentes formas de comunicação e resposta',
+  'Alternativas para participação e movimento',
+  'Atenção a estímulos sensoriais',
+  'Flexibilidade de tempo e ritmo',
+  'Materiais e recursos acessíveis',
+];
 
 function PlanningForm({ onGenerate, isLoading }: PlanningFormProps) {
   const [classLevel, setClassLevel] = useState<ClassLevel | ''>('');
   const [theme, setTheme] = useState('');
   const [duration, setDuration] = useState('');
+  const [inclusionSupports, setInclusionSupports] = useState<string[]>([]);
   const [error, setError] = useState('');
+
+  const toggleSupport = (option: string) => {
+    setInclusionSupports((current) =>
+      current.includes(option)
+        ? current.filter((item) => item !== option)
+        : [...current, option],
+    );
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!classLevel || !theme.trim() || !duration.trim()) {
-      setError('Por favor, preencha todos os campos antes de gerar o planejamento.');
+      setError('Preencha a turma, o tema e o tempo disponível.');
       return;
     }
+
     setError('');
-    onGenerate({ classLevel, theme: theme.trim(), duration: duration.trim() });
+
+    onGenerate({
+      classLevel,
+      theme: theme.trim(),
+      duration: duration.trim(),
+      inclusionSupports,
+    });
   };
 
   return (
@@ -39,6 +71,7 @@ function PlanningForm({ onGenerate, isLoading }: PlanningFormProps) {
         <label htmlFor="classLevel" className="planning-form__label">
           Turma
         </label>
+
         <select
           id="classLevel"
           className="planning-form__select"
@@ -48,9 +81,7 @@ function PlanningForm({ onGenerate, isLoading }: PlanningFormProps) {
         >
           <option value="">Selecione a turma</option>
           {CLASS_LEVELS.map((level) => (
-            <option key={level} value={level}>
-              {level}
-            </option>
+            <option key={level} value={level}>{level}</option>
           ))}
         </select>
       </div>
@@ -59,11 +90,12 @@ function PlanningForm({ onGenerate, isLoading }: PlanningFormProps) {
         <label htmlFor="theme" className="planning-form__label">
           Tema da aula
         </label>
+
         <input
           id="theme"
           type="text"
           className="planning-form__input"
-          placeholder="Ex.: As cores do outono, Os animais da fazenda..."
+          placeholder="Ex.: As cores, os animais, a amizade..."
           value={theme}
           onChange={(e) => setTheme(e.target.value)}
           disabled={isLoading}
@@ -74,6 +106,7 @@ function PlanningForm({ onGenerate, isLoading }: PlanningFormProps) {
         <label htmlFor="duration" className="planning-form__label">
           Tempo disponível
         </label>
+
         <input
           id="duration"
           type="text"
@@ -84,16 +117,51 @@ function PlanningForm({ onGenerate, isLoading }: PlanningFormProps) {
           onChange={(e) => setDuration(e.target.value)}
           disabled={isLoading}
         />
+
         <datalist id="duration-presets">
-          {DURATION_PRESETS.map((d) => (
-            <option key={d} value={d} />
+          {DURATION_PRESETS.map((item) => (
+            <option key={item} value={item} />
           ))}
         </datalist>
       </div>
 
-      {error && <p className="planning-form__error" role="alert">{error}</p>}
+      <div className="planning-form__inclusion">
+        <h3>Inclusão e acessibilidade</h3>
+        <p>
+          Quais possibilidades de participação você gostaria que
+          a IA considerasse nesta proposta?
+        </p>
 
-      <button type="submit" className="planning-form__submit" disabled={isLoading}>
+        <div className="inclusion-options">
+          {INCLUSION_OPTIONS.map((option) => (
+            <label key={option} className="inclusion-option">
+              <input
+                type="checkbox"
+                checked={inclusionSupports.includes(option)}
+                onChange={() => toggleSupport(option)}
+                disabled={isLoading}
+              />
+              <span>{option}</span>
+            </label>
+          ))}
+        </div>
+
+        <small>
+          Opcional. Não informe nomes, diagnósticos ou dados pessoais
+          de crianças. As sugestões são possibilidades para a professora
+          avaliar e adaptar.
+        </small>
+      </div>
+
+      {error && (
+        <p className="planning-form__error" role="alert">{error}</p>
+      )}
+
+      <button
+        type="submit"
+        className="planning-form__submit"
+        disabled={isLoading}
+      >
         {isLoading ? 'Gerando planejamento...' : 'Gerar planejamento'}
       </button>
     </form>
